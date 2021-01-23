@@ -1,0 +1,5 @@
+PyYAML~=5.3.1
+opencv-python~=4.4.0.46
+numpy~=1.19.4
+jsonschema~=3.2.0
+influxdb~=5.3.1
