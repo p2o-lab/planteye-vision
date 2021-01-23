@@ -1,7 +1,7 @@
 from src.capturing_device import CapturingDevice
 from influxdb_writer import InfluxDBWriter
 from Buffer import Buffer
-from schema import validate_cfg
+import schema
 import yaml
 
 if __name__ == '__main__':
@@ -12,7 +12,8 @@ if __name__ == '__main__':
         cfg = yaml.safe_load(config_file)
 
     # Validate config
-    validation_res, validation_msg = validate_cfg(cfg)
+    json_schema = 'src/config_schema.json'
+    validation_res, validation_msg = schema.validate_cfg(cfg, json_schema)
     if not validation_res:
         print(validation_msg)
         exit(1)

@@ -11,7 +11,7 @@ capturing_device:
 data_storage:
   type: local
   connection:
-    filepath: /home/user/images/
+    filepath: /var/data/vision/
     filename_mask: image_
 buffer:
   max_size: 100
