@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+
+  vision:
+    build: .
+    volumes:
+      - ./data:/var/data/vision
+    devices:
+      - /dev/video0:/dev/video0
+    network_mode: "host"

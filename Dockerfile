@@ -7,7 +7,6 @@ WORKDIR /vision
 
 # update and install components
 RUN apt-get update -y
-RUN pip3 install opencv-python
 RUN apt install libgl1-mesa-glx -y
 RUN apt-get install 'ffmpeg'\
     'libsm6'\
