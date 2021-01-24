@@ -1,6 +1,6 @@
 # set base image (host OS)
 #FROM arm32v7/python:3.8
-FROM arm32v7/python:3.8
+FROM python:3.8
 
 # set the working directory in the container
 WORKDIR /vision
