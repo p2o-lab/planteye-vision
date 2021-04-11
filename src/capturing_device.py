@@ -4,6 +4,7 @@ from event_logger import log_event
 import time
 import threading
 import copy
+from json import dump
 
 
 class CapturingDevice:
@@ -18,7 +19,8 @@ class CapturingDevice:
         # Configuration
         self.cfg = cfg
         self.capture_type = cfg['capturing_device']['type']
-        self.storage_type = cfg['data_storage']['type']
+        self.frame_storage_type = cfg['data_storage']['type']
+        self.metadata_storage_type = cfg['metadata_storage']['type']
         self.capturing_interval = self.cfg['capturing_device']['capturing_interval']
 
         self._initialised = False
@@ -46,7 +48,7 @@ class CapturingDevice:
             return self._configure_cv2()
         elif self.capture_type == 'local_camera_jetson':
             return self._configure_jetson()
-        elif self.storage_type == 'rtmp':
+        elif self.capture_type == 'rtmp':
             return self._configure_rtmp()
 
     def _configure_cv2(self):
@@ -261,9 +263,10 @@ class CapturingDevice:
             if ret_value and frame_saved and not self._stop:
                 self.buffer_data['fields']['filename'] = filename
                 self.buffer_data['timestamp'] = timestamp
-                data_for_buffer = copy.deepcopy(self.buffer_data)
-                buffer_entity = BufferEntity(entity_type='frame', data=data_for_buffer)
-                self.buffer.add_point(buffer_entity)
+                frame_metadata = copy.deepcopy(self.buffer_data)
+                self._save_metadata(frame_metadata)
+                #buffer_entity = BufferEntity(entity_type='frame', data=frame_metadata)
+                #self.buffer.add_point(buffer_entity)
                 self._current_frame_id += 1
 
             if self._stop:
@@ -279,6 +282,22 @@ class CapturingDevice:
             else:
                 # Calculate how long we need to wait till the begin of the next cycle
                 time.sleep(max(self.capturing_interval / 1000.0 - (time.time() - cycle_begin), 0))
+
+    def _save_metadata(self, frame_metadata):
+        if self.metadata_storage_type == 'local':
+            self._save_metadata_local(frame_metadata)
+
+    def _save_metadata_local(self, frame_metadata):
+        try:
+            filepath = self.cfg['metadata_storage']['connection']['filepath']
+            filename = self.cfg['metadata_storage']['connection']['filename_mask']
+            filename += '%0*d' % (6, self._current_frame_id)
+            filename += '.json'
+            with open(filepath + filename, 'w') as outfile:
+                dump(frame_metadata, outfile, skipkeys=True, indent=4)
+            log_event(self.cfg, self.module_name, '', 'INFO', 'Metadata saved as ' + filepath + filename)
+        except:
+            log_event(self.cfg, self.module_name, '', 'ERR', 'Saving metadata as ' + filepath + filename + ' failed')
 
     def _capture_frame(self):
         """
@@ -325,11 +344,11 @@ class CapturingDevice:
         :param frame:
         :return:
         """
-        if self.storage_type == 'local':
+        if self.frame_storage_type == 'local':
             return self._save_frame_locally(frame)
-        elif self.storage_type == 'ftp':
+        elif self.frame_storage_type == 'ftp':
             return self._save_frame_ftp(frame)
-        elif self.storage_type == 'dataverse':
+        elif self.frame_storage_type == 'dataverse':
             return self._save_frame_dataverse(frame)
 
     def _save_frame_locally(self, frame):
@@ -345,7 +364,7 @@ class CapturingDevice:
             filepath = self.cfg['data_storage']['connection']['filepath']
             filename = self.cfg['data_storage']['connection']['filename_mask']
             filename += '%0*d' % (6, self._current_frame_id)
-            filename += '.png '
+            filename += '.png'
             ret = cv2.imwrite(filepath + filename, frame)
 
         if ret:
