@@ -7,7 +7,6 @@
     "capturing_device",
     "data_storage",
     "buffer",
-    "metadata",
     "event_logger"
   ],
   "properties": {
@@ -90,10 +89,6 @@
           "default": 100
         }
       }
-    },
-    "metadata": {
-      "type": "object",
-      "title": "Metadata"
     },
     "event_logger": {
       "type": "object",

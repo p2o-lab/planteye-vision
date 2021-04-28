@@ -1,6 +1,4 @@
 from src.capturing_device import CapturingDevice
-from influxdb_writer import InfluxDBWriter
-from Buffer import Buffer
 import schema
 import yaml
 
@@ -18,10 +16,7 @@ if __name__ == '__main__':
         print(validation_msg)
         exit(1)
 
-    # Initialise buffer
-    data_buffer = Buffer(cfg)
-
     # Start capturing
-    cap_dev = CapturingDevice(cfg=cfg, buffer=data_buffer)
+    cap_dev = CapturingDevice(cfg=cfg)
     cap_dev.connect()
 

@@ -1,9 +1,9 @@
 import cv2
-from Buffer import BufferEntity
 from event_logger import log_event
 import time
 import threading
 import copy
+from os import path
 from json import dump
 
 
@@ -12,15 +12,14 @@ class CapturingDevice:
     This class describes capturing device
     """
 
-    def __init__(self, cfg, buffer):
+    def __init__(self, cfg):
         # Module name
         self.module_name = 'CapDev'
 
         # Configuration
         self.cfg = cfg
         self.capture_type = cfg['capturing_device']['type']
-        self.frame_storage_type = cfg['data_storage']['type']
-        self.metadata_storage_type = cfg['metadata_storage']['type']
+        self.storage_type = cfg['data_storage']['type']
         self.capturing_interval = self.cfg['capturing_device']['capturing_interval']
 
         self._initialised = False
@@ -35,9 +34,6 @@ class CapturingDevice:
 
         # Frame counter
         self._current_frame_id = 0
-
-        # Buffer
-        self.buffer = buffer
 
     def _configure(self):
         """
@@ -239,7 +235,7 @@ class CapturingDevice:
 
     def _capturing(self):
         """
-        This function periodically captures a frame and copies it together with metadata into buffer
+        This function periodically captures a frame and copies it together with metadata into structure
         :return:
         """
         # Set initial time point
@@ -279,20 +275,25 @@ class CapturingDevice:
                 time.sleep(max(self.capturing_interval / 1000.0 - (time.time() - cycle_begin), 0))
 
     def _save_metadata(self, frame_metadata):
-        if self.metadata_storage_type == 'local':
+        if self.storage_type == 'local':
             self._save_metadata_local(frame_metadata)
 
     def _save_metadata_local(self, frame_metadata):
         try:
-            filepath = self.cfg['metadata_storage']['connection']['filepath']
-            filename = self.cfg['metadata_storage']['connection']['filename_mask']
+            filepath = path.join(self.cfg['data_storage']['connection']['filepath'], 'metadata')
+            filename = self.cfg['data_storage']['connection']['filename_mask']
             filename += '%0*d' % (6, self._current_frame_id)
             filename += '.json'
-            with open(filepath + filename, 'w') as outfile:
-                dump(frame_metadata, outfile, skipkeys=True, indent=4)
-            log_event(self.cfg, self.module_name, '', 'INFO', 'Metadata saved as ' + filepath + filename)
+            fullname = path.join(filepath, filename)
         except:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Saving metadata as ' + filepath + filename + ' failed')
+            log_event(self.cfg, self.module_name, '', 'ERR', 'Impossible saving path:' + filepath + ' ' + filename)
+
+        try:
+            with open(fullname, 'w') as outfile:
+                dump(frame_metadata, outfile, skipkeys=True, indent=4)
+            log_event(self.cfg, self.module_name, '', 'INFO', 'Metadata saved as ' + fullname)
+        except:
+            log_event(self.cfg, self.module_name, '', 'ERR', 'Saving metadata as ' + fullname + ' failed')
 
     def _capture_frame(self):
         """
@@ -339,11 +340,11 @@ class CapturingDevice:
         :param frame:
         :return:
         """
-        if self.frame_storage_type == 'local':
+        if self.storage_type == 'local':
             return self._save_frame_locally(frame)
-        elif self.frame_storage_type == 'ftp':
+        elif self.storage_type == 'ftp':
             return self._save_frame_ftp(frame)
-        elif self.frame_storage_type == 'dataverse':
+        elif self.storage_type == 'dataverse':
             return self._save_frame_dataverse(frame)
 
     def _save_frame_locally(self, frame):
@@ -355,17 +356,24 @@ class CapturingDevice:
         filename = ''
         if type(frame) == 'NoneType':
             ret = False
-        else:
-            filepath = self.cfg['data_storage']['connection']['filepath']
+            log_event(self.cfg, self.module_name, '', 'ERR', 'No frame to save')
+            return ret, None
+
+        try:
+            filepath = path.join(self.cfg['data_storage']['connection']['filepath'], 'frames')
             filename = self.cfg['data_storage']['connection']['filename_mask']
             filename += '%0*d' % (6, self._current_frame_id)
             filename += '.png'
-            ret = cv2.imwrite(filepath + filename, frame)
+            fullname = path.join(filepath, filename)
+        except:
+            log_event(self.cfg, self.module_name, '', 'ERR', 'Impossible saving path:' + filepath + ' ' + filename)
 
-        if ret:
-            log_event(self.cfg, self.module_name, '', 'INFO', 'Frame saved as ' + filepath + filename)
-        else:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Saving as ' + filepath + filename + ' failed')
+        try:
+            ret = cv2.imwrite(fullname, frame)
+            log_event(self.cfg, self.module_name, '', 'INFO', 'Frame saved as ' + fullname)
+        except:
+            log_event(self.cfg, self.module_name, '', 'ERR', 'Saving as ' + fullname + ' failed')
+
         return ret, filename
 
     def _save_frame_ftp(self, frame):
