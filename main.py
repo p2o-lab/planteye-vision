@@ -25,7 +25,3 @@ if __name__ == '__main__':
     cap_dev = CapturingDevice(cfg=cfg, buffer=data_buffer)
     cap_dev.connect()
 
-    # Start influxdb writer
-    idb = InfluxDBWriter(cfg=cfg, buffer=data_buffer)
-    idb.connect()
-

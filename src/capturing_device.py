@@ -121,11 +121,9 @@ class CapturingDevice:
         elif self.capture_type == 'rtmp':
             self._initialise_rtmp()
 
-        self.buffer_data = {'metric_id': self.cfg['influxdb']['metric_id'],
-                            'measurement': self.cfg['influxdb']['measurement'],
-                            'tags': self.cfg['metadata'], 'fields': {}, 'timestamp': None}
-        self.buffer_data['tags']['storage_type'] = self.cfg['data_storage']['type']
-        self.buffer_data['tags'].update(self.cfg['data_storage']['connection'])
+        self.metadata = {'tags': self.cfg['metadata']}
+        self.metadata['tags']['storage_type'] = self.cfg['data_storage']['type']
+        self.metadata['tags'].update(self.cfg['data_storage']['connection'])
 
         return self._initialised
 
@@ -261,12 +259,9 @@ class CapturingDevice:
             frame_saved, filename = self._save_frame(frame)
 
             if ret_value and frame_saved and not self._stop:
-                self.buffer_data['fields']['filename'] = filename
-                self.buffer_data['timestamp'] = timestamp
-                frame_metadata = copy.deepcopy(self.buffer_data)
+                self.metadata['timestamp'] = timestamp
+                frame_metadata = copy.deepcopy(self.metadata)
                 self._save_metadata(frame_metadata)
-                #buffer_entity = BufferEntity(entity_type='frame', data=frame_metadata)
-                #self.buffer.add_point(buffer_entity)
                 self._current_frame_id += 1
 
             if self._stop:

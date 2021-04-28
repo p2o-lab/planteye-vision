@@ -7,7 +7,6 @@
     "capturing_device",
     "data_storage",
     "buffer",
-    "influxdb",
     "metadata",
     "event_logger"
   ],
@@ -89,90 +88,6 @@
           "type": "integer",
           "title": "Capacity of buffer",
           "default": 100
-        }
-      }
-    },
-    "influxdb": {
-      "$id": "#/properties/influx",
-      "type": "object",
-      "title": "The Influx Schema",
-      "required": [
-        "host",
-        "port",
-        "user",
-        "password",
-        "database",
-        "db_user",
-        "db_password",
-        "reconnect_interval",
-        "write_interval",
-        "metric_id",
-        "measurement"
-      ],
-      "properties": {
-        "host": {
-          "$id": "#/properties/influx/properties/host",
-          "type": "string",
-          "title": "Influxdb host",
-          "default": "",
-          "pattern": "^(.*)$"
-        },
-        "port": {
-          "$id": "#/properties/influx/properties/port",
-          "type": "integer",
-          "title": "Port number",
-          "default": 8086
-        },
-        "user": {
-          "$id": "#/properties/influx/properties/user",
-          "type": "string",
-          "title": "Username to access influxdb server",
-          "default": "root"
-        },
-        "password": {
-          "$id": "#/properties/influx/properties/password",
-          "type": "string",
-          "title": "Password to access influxdb server",
-          "default": "root"
-        },
-        "database": {
-          "$id": "#/properties/influx/properties/database",
-          "type": "string",
-          "title": "Database name"
-        },
-        "db_user": {
-          "$id": "#/properties/influx/properties/db_user",
-          "type": "string",
-          "title": "Username to access selected database",
-          "default": "root"
-        },
-        "db_password": {
-          "$id": "#/properties/influx/properties/db_password",
-          "type": "string",
-          "title": "Password to access selected database",
-          "default": "root"
-        },
-        "reconnect_interval": {
-          "$id": "#/properties/influx/properties/reconnect_interval",
-          "type": "integer",
-          "title": "Time interval between reconnection attempts",
-          "default": 10000
-        },
-        "write_interval": {
-          "$id": "#/properties/influx/properties/write_interval",
-          "type": "integer",
-          "title": "Time interval between two writing routines",
-          "default": 10000
-        },
-        "metric_id": {
-          "$id": "#/properties/influx/properties/metric_id",
-          "type": "string",
-          "title": "Metric id to show in event logger"
-        },
-        "measurement": {
-          "$id": "#/properties/influx/properties/measurement",
-          "type": "string",
-          "title": "Measurement name of influxdb where to ingest data"
         }
       }
     },

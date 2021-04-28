@@ -6,31 +6,19 @@ capturing_device:
   parameters:
     CAP_PROP_FRAME_HEIGHT: 1280
     CAP_PROP_FRAME_WIDTH: 720
-    CAP_PROP_FPS: 30
+    CAP_PROP_FPS: 240
   capturing_interval: 1000
 data_storage:
   type: local
   connection:
-    filepath: /home/user/Desktop/data/frames/
+    filepath: data/frames/
     filename_mask: image_
 buffer:
   max_size: 100
-influxdb:
-  host: 127.0.0.1
-  port: 8086
-  user: root
-  password: root
-  database: CV
-  db_user: db_user
-  db_password: db_password
-  reconnect_interval: 10000
-  write_interval: 10000
-  metric_id: flow_regime, camera front
-  measurement: flow_regime
 metadata_storage:
   type: local
   connection:
-    filepath: /home/user/Desktop/data/metadata/
+    filepath: data/metadata/
     filename_mask: image_
 metadata:
   '010F': RaspPi # Manufacturer of recording equipment
