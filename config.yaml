@@ -6,23 +6,18 @@ capturing_device:
   parameters:
     CAP_PROP_FRAME_HEIGHT: 1280
     CAP_PROP_FRAME_WIDTH: 720
-    CAP_PROP_FPS: 240
+    CAP_PROP_FPS: 30
   capturing_interval: 1000
 data_storage:
   type: local
   connection:
-    filepath: data/frames/
+    filepath: data/
     filename_mask: image_
 buffer:
   max_size: 100
-metadata_storage:
-  type: local
-  connection:
-    filepath: data/metadata/
-    filename_mask: image_
 metadata:
   '010F': RaspPi # Manufacturer of recording equipment
-  '0110': HQ Camera v1.1 # The model name or model numer of the equipment
+  '0110': HQ Camera v1.1 # The model name or model number of the equipment
   'A432': 6mm f/1.2 # Lens specification.
   'A433': RPIZ # Lens manufacturer.
   'A434': PT361060M3MP12 # Lens model. 
@@ -41,7 +36,5 @@ metadata:
   'A407': 1.0 # Image gain adjustment.
   'A408': 0 # Contrast.
   'A409': 0 # Saturation.
-  'A40A': 0 # Sharpness. 
-event_logger:
-  publish: false
-  print_level: DEBUG
+  'A40A': 0 # Sharpness.
+  'Beleuchtung': 'natural'
