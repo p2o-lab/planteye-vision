@@ -1,5 +1,5 @@
 import cv2
-from event_logger import log_event
+import logging
 import time
 import threading
 import copy
@@ -64,7 +64,6 @@ class CapturingDevice:
         :return:  Status of configuration process: True - Successful, False - Unsuccessful
         """
         # TODO: add support
-        log_event(self.cfg, self.module_name, '', 'WARN', 'Parameter change of Jetson nano not supported yet')
         return False
 
     def _configure_rtmp(self):
@@ -73,7 +72,6 @@ class CapturingDevice:
         :return:  Status of configuration process: True - Successful, False - Unsuccessful
         """
         # TODO: add support
-        log_event(self.cfg, self.module_name, '', 'WARN', 'Parameter change of RTMP cameras not supported')
         return False
 
     def _set_parameter_cv2(self, parameter, value):
@@ -86,21 +84,19 @@ class CapturingDevice:
         exec("par = cv2.%s" % parameter)
         initial_value = self.camera.get(par)
         if not initial_value:
-            log_event(self.cfg, self.module_name, '', 'WARN',
-                      'Parameter (' + parameter + ') is not supported by VideoCapture instance')
+            logging.warning('Parameter (' + parameter + ') is not supported by VideoCapture instance')
             return False
         backend_support = self.camera.set(par, value)
         if not backend_support:
-            log_event(self.cfg, self.module_name, '', 'WARN',
-                      'Parameter (' + parameter + ') cannot be changed (' + str(value) + ')')
+            logging.warning(
+                self.module_name + 'Parameter (' + parameter + ') cannot be changed (' + str(value) + ')')
             return False
         new_value = self.camera.get(par)
         if new_value == initial_value:
-            log_event(self.cfg, self.module_name, '', 'WARN',
-                      'Parameter (' + parameter + ') has not changed (' + str(value) + ')')
+            logging.warning('Parameter (' + parameter + ') has not changed (' + str(value) + ')')
             return False
         else:
-            log_event(self.cfg, self.module_name, '', 'INFO', 'Parameter (' + parameter + ') changed to ' + str(value))
+            logging.info( 'Parameter (' + parameter + ') changed to ' + str(value))
             return True
 
     def _initialise(self):
@@ -130,10 +126,10 @@ class CapturingDevice:
         """
         self.camera = cv2.VideoCapture(self.cfg['capturing_device']['connection']['device_id'])
         if self.camera.isOpened():
-            log_event(self.cfg, self.module_name, '', 'INFO', 'Capturing device initialisation successful')
+            logging.info('Capturing device initialisation successful')
             self._initialised = True
         else:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Capturing device initialisation failed')
+            logging.error('Capturing device initialisation failed')
             self._initialised = False
 
     def _initialise_local_camera_jetson(self):
@@ -184,10 +180,10 @@ class CapturingDevice:
                 res = self._release_cv2()
 
             if not res:
-                log_event(self.cfg, self.module_name, '', 'WARN', 'Capturing device could not be released')
+                logging.warning('Capturing device could not be released')
                 self._initialised = True
             else:
-                log_event(self.cfg, self.module_name, '', 'INFO', 'Captured device released successfully')
+                logging.info('Captured device released successfully')
                 self._initialised = False
 
     def _release_cv2(self):
@@ -210,11 +206,11 @@ class CapturingDevice:
         This function stops capturing and releases the capturing device
         :return:
         """
-        log_event(self.cfg, self.module_name, '', 'INFO', 'Disconnecting from capturing device ...')
+        logging.info('Disconnecting from capturing device ...')
         self._exit = True
         self._stop_capturing()
         self._release()
-        log_event(self.cfg, self.module_name, '', 'INFO', 'Disconnection successful')
+        logging.info('Disconnection successful')
 
     def _start_capturing(self):
         """
@@ -248,7 +244,7 @@ class CapturingDevice:
 
             # If last cycle lasted much longer, we need to skip the current polling cycle to catch up in the future
             if cycle_begin + 0.010 < time.time():
-                log_event(self.cfg, self.module_name, '', 'ERR', 'Capturing skipped (increase time interval)')
+                logging.error('Capturing skipped (increase time interval)')
                 continue
 
             ret_value, frame, timestamp = self._capture_frame()
@@ -268,8 +264,7 @@ class CapturingDevice:
 
             # If the cycle duration longer than given and no connection issues, jump directly to the next cycle
             if cycle_dur > self.capturing_interval / 1000.0:
-                log_event(self.cfg, self.module_name, '', 'WARN',
-                          'Capturing takes longer ' + str(cycle_dur) + ' than given time intervals')
+                logging.warning('Capturing takes longer ' + str(cycle_dur) + ' than given time intervals')
             else:
                 # Calculate how long we need to wait till the begin of the next cycle
                 time.sleep(max(self.capturing_interval / 1000.0 - (time.time() - cycle_begin), 0))
@@ -286,14 +281,16 @@ class CapturingDevice:
             filename += '.json'
             fullname = path.join(filepath, filename)
         except:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Impossible saving path:' + filepath + ' ' + filename)
+            logging.error(
+                self.module_name + 'Impossible saving path:' + filepath + ' ' + filename)
 
         try:
             with open(fullname, 'w') as outfile:
                 dump(frame_metadata, outfile, skipkeys=True, indent=4)
-            log_event(self.cfg, self.module_name, '', 'INFO', 'Metadata saved as ' + fullname)
+                logging.info('Metadata saved as ' + fullname)
         except:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Saving metadata as ' + fullname + ' failed')
+            logging.error(
+                self.module_name + 'Saving metadata as ' + fullname + ' failed')
 
     def _capture_frame(self):
         """
@@ -320,9 +317,11 @@ class CapturingDevice:
         # frame = cv2.imread('test_image.jpg', 0)
 
         if return_value:
-            log_event(self.cfg, self.module_name, '', 'INFO', 'Frame captured')
+            logging.info(
+                self.module_name + 'Frame captured')
         else:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Capturing frame failed')
+            logging.error(
+                self.module_name + 'Capturing frame failed')
 
         return return_value, frame, timestamp
 
@@ -356,7 +355,8 @@ class CapturingDevice:
         filename = ''
         if type(frame) == 'NoneType':
             ret = False
-            log_event(self.cfg, self.module_name, '', 'ERR', 'No frame to save')
+            logging.error(
+                self.module_name + 'No frame to save')
             return ret, None
 
         try:
@@ -366,14 +366,16 @@ class CapturingDevice:
             filename += '.png'
             fullname = path.join(filepath, filename)
         except:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Impossible saving path:' + filepath + ' ' + filename)
+            logging.error(
+                self.module_name + 'Invalid saving path:' + filepath + ' ' + filename)
 
         try:
             ret = cv2.imwrite(fullname, frame)
-            log_event(self.cfg, self.module_name, '', 'INFO', 'Frame saved as ' + fullname)
+            logging.info(
+                self.module_name + 'Frame saved as ' + fullname)
         except:
-            log_event(self.cfg, self.module_name, '', 'ERR', 'Saving as ' + fullname + ' failed')
-
+            logging.err(
+                self.module_name + 'Saving as ' + fullname + ' failed')
         return ret, filename
 
     def _save_frame_ftp(self, frame):

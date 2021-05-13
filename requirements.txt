@@ -1,4 +1,4 @@
-PyYAML~=5.3.1
-numpy~=1.19.4
+PyYAML~=5.4.1
+numpy~=1.20.3
+opencv-python~=4.5.2.52
 jsonschema
-pyDataverse~=0.3.0

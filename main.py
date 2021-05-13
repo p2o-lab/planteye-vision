@@ -1,17 +1,17 @@
 from src.capturing_device import CapturingDevice
-import schema
-import yaml
+from src.schema import validate_cfg
+from yaml import safe_load
+import logging
 
 if __name__ == '__main__':
 
-    # Import config
-    cfg_file = 'config.yaml'
-    with open(cfg_file) as config_file:
-        cfg = yaml.safe_load(config_file)
+    logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%(funcName)s: %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
-    # Validate config
-    json_schema = 'src/config_schema.json'
-    validation_res, validation_msg = schema.validate_cfg(cfg, json_schema)
+    # Import and validate config
+    with open('config.yaml') as config_file:
+        cfg = safe_load(config_file)
+    validation_res, validation_msg = validate_cfg(cfg, 'src/config_schema.json')
     if not validation_res:
         print(validation_msg)
         exit(1)
