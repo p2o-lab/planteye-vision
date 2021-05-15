@@ -5,8 +5,7 @@
   "title": "The Configuration Schema for Vision of PlantEye",
   "required": [
     "capturing_device",
-    "data_storage",
-    "buffer"
+    "api"
   ],
   "properties": {
     "opcua": {
@@ -45,47 +44,6 @@
           "type": "integer",
           "title": "Capturing interval in milliseconds",
           "default": 1000
-        }
-      }
-    },
-    "data_storage": {
-      "type": "object",
-      "title": "The data storage schema",
-      "required": [
-        "type",
-        "connection"
-      ],
-      "properties": {
-        "type": {
-          "$id": "#/properties/data_storage/properties/type",
-          "type": "string",
-          "title": "Type of storage for frames",
-          "default": "local",
-          "enum": [
-            "local",
-            "dataverse",
-            "ftp"
-          ]
-        },
-        "connection": {
-          "$id": "#/properties/data_storage/properties/connection",
-          "type": "object",
-          "title": "Connection data to access the data storage"
-        }
-      }
-    },
-    "buffer": {
-      "type": "object",
-      "title": "Buffer Schema",
-      "required": [
-        "max_size"
-      ],
-      "properties": {
-        "max_size": {
-          "$id": "#/properties/buffer/properties/buffer_size",
-          "type": "integer",
-          "title": "Capacity of buffer",
-          "default": 100
         }
       }
     }

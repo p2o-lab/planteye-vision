@@ -2,9 +2,7 @@ import cv2
 import logging
 import time
 import threading
-import copy
-from os import path
-from json import dump
+from base64 import b64encode
 
 
 class CapturingDevice:
@@ -13,38 +11,24 @@ class CapturingDevice:
     """
 
     def __init__(self, cfg):
-        # Module name
-        self.module_name = 'CapDev'
 
-        # Configuration
-        self.cfg = cfg
-        self.capture_type = cfg['capturing_device']['type']
-        self.storage_type = cfg['data_storage']['type']
-        self.capturing_interval = self.cfg['capturing_device']['capturing_interval']
-
+        self._cfg = cfg
+        self._camera = None
         self._initialised = False
-        self._capturing_thread = None
-
-        # Capturing device object
-        self.camera = None
-
-        # Stop and exit flags
+        self._capturing = False
         self._exit = False
-        self._stop = False
-
-        # Frame counter
-        self._current_frame_id = 0
+        self._frames_taken = 0
 
     def _configure(self):
         """
         This function configures capturing device according to parameters from the config
         :return:  Status of configuration process: True - Successful, False - Unsuccessful
         """
-        if self.capture_type == 'local_camera_cv2':
+        if self._cfg['capturing_device']['type'] == 'local_camera_cv2':
             return self._configure_cv2()
-        elif self.capture_type == 'local_camera_jetson':
+        elif self._cfg['capturing_device']['type'] == 'local_camera_jetson':
             return self._configure_jetson()
-        elif self.capture_type == 'rtmp':
+        elif self._cfg['capturing_device']['type'] == 'rtmp':
             return self._configure_rtmp()
 
     def _configure_cv2(self):
@@ -52,11 +36,10 @@ class CapturingDevice:
         This function configures local capturing device by means of methods of OpenCV package
         :return:  Status of configuration process: True - Successful, False - Unsuccessful
         """
-        status = True
-        for parameter, value in self.cfg['capturing_device']['parameters'].items():
-            res = self._set_parameter_cv2(parameter, value)
-            status = status * res
-        return status
+        res = True
+        for parameter, value in self._cfg['capturing_device']['parameters'].items():
+            res *= self._set_parameter_cv2(parameter, value)
+        return res
 
     def _configure_jetson(self):
         """
@@ -74,30 +57,36 @@ class CapturingDevice:
         # TODO: add support
         return False
 
-    def _set_parameter_cv2(self, parameter, value):
+    def _set_parameter_cv2(self, parameter, requested_value):
         """
         This function sets parameter of capturing device and checks if it was set
         :return: Status of configuration process: True - Successful, False - Unsuccessful
         """
         # Get parameter from opencv2 based on its name
         par = None
-        exec("par = cv2.%s" % parameter)
-        initial_value = self.camera.get(par)
+        try:
+            exec("par = cv2.%s" % parameter)
+        except:
+            logging.warning('Parameter (' + parameter + ') is not found by name')
+            return False
+
+        initial_value = self._camera.get(par)
         if not initial_value:
             logging.warning('Parameter (' + parameter + ') is not supported by VideoCapture instance')
             return False
-        backend_support = self.camera.set(par, value)
+
+        backend_support = self._camera.set(par, requested_value)
         if not backend_support:
-            logging.warning(
-                self.module_name + 'Parameter (' + parameter + ') cannot be changed (' + str(value) + ')')
+            logging.warning('Parameter (' + parameter + ') cannot be changed (' + str(requested_value) + ')')
             return False
-        new_value = self.camera.get(par)
-        if new_value == initial_value:
-            logging.warning('Parameter (' + parameter + ') has not changed (' + str(value) + ')')
-            return False
-        else:
-            logging.info( 'Parameter (' + parameter + ') changed to ' + str(value))
+
+        new_value = self._camera.get(par)
+        if new_value == requested_value:
+            logging.info('Parameter (' + parameter + ') set to ' + str(new_value))
             return True
+        else:
+            logging.warning('Setting parameter (' + parameter + ') unsuccessful. Actual value ' + str(new_value))
+            return False
 
     def _initialise(self):
         """
@@ -105,17 +94,12 @@ class CapturingDevice:
         :return: Status of initialisation process: True - Successful, False - Unsuccessful
         """
 
-        # Setup capturing device
-        if self.capture_type == 'local_camera_cv2':
+        if self._cfg['capturing_device']['type'] == 'local_camera_cv2':
             self._initialise_local_camera_cv2()
-        elif self.capture_type == 'local_camera_jetson':
+        elif self._cfg['capturing_device']['type'] == 'local_camera_jetson':
             self._initialise_local_camera_jetson()
-        elif self.capture_type == 'rtmp':
+        elif self._cfg['capturing_device']['type'] == 'rtmp':
             self._initialise_rtmp()
-
-        self.metadata = {'tags': self.cfg['metadata']}
-        self.metadata['tags']['storage_type'] = self.cfg['data_storage']['type']
-        self.metadata['tags'].update(self.cfg['data_storage']['connection'])
 
         return self._initialised
 
@@ -124,9 +108,9 @@ class CapturingDevice:
         This function initialise local capturing device connected via OpenCV package
         :return: Status of initialisation process: True - Successful, False - Unsuccessful
         """
-        self.camera = cv2.VideoCapture(self.cfg['capturing_device']['connection']['device_id'])
-        if self.camera.isOpened():
-            logging.info('Capturing device initialisation successful')
+        self._camera = cv2.VideoCapture(self._cfg['capturing_device']['connection']['device_id'])
+        if self._camera.isOpened():
+            logging.info('Capturing device initialised successfully')
             self._initialised = True
         else:
             logging.error('Capturing device initialisation failed')
@@ -138,7 +122,7 @@ class CapturingDevice:
         :return: Status of initialisation process: True - Successful, False - Unsuccessful
         """
         # TODO: add support
-        self.camera = None
+        self._camera = None
         self._initialised = False
 
     def _initialise_rtmp(self):
@@ -147,23 +131,24 @@ class CapturingDevice:
         :return: Status of initialisation process: True - Successful, False - Unsuccessful
         """
         # TODO: add support
-        self.camera = None
+        self._camera = None
         self._initialised = False
 
-    def connect(self):
+    def start(self):
         """
         This function starts connectivity thread
         :return:
         """
-        self._initialise()
+        ret = self._initialise()
 
-        # TODO: add following lines after debugging
         if not self._initialised:
             return
 
         self._configure()
-        time.sleep(1)
-        self._start_capturing()
+
+    def stop(self):
+        self._exit = True
+        self._release()
 
     def _release(self):
         """
@@ -172,12 +157,15 @@ class CapturingDevice:
         """
         if self._initialised:
 
-            if self.capture_type == 'local_camera_cv2':
+            if self._cfg['capturing_device']['type'] == 'local_camera_cv2':
                 res = self._release_cv2()
-            elif self.capture_type == 'local_camera_jetson':
+            elif self._cfg['capturing_device']['type'] == 'local_camera_jetson':
                 res = self._release_jetson()
-            elif self.capture_type == 'rtmp':
+            elif self._cfg['capturing_device']['type'] == 'rtmp':
                 res = self._release_cv2()
+            else:
+                logging.error('Capturing device type specified in config is unknown')
+                res = False
 
             if not res:
                 logging.warning('Capturing device could not be released')
@@ -188,18 +176,18 @@ class CapturingDevice:
 
     def _release_cv2(self):
         """
-        This function releases the capturing device initilised via OpenCV package
+        This function releases the capturing device initialised via OpenCV package
         :return: Status of release process: True - Successful, False - Unsuccessful
         """
-        return self.camera.release()
+        return self._camera.release()
 
     def _release_jetson(self):
         """
-        This function releases the capturing device initilised via Jetson Nano package
+        This function releases the capturing device initialised via Jetson Nano package
         :return: Status of release process: True - Successful, False - Unsuccessful
         """
         # TODO: add support
-        return None
+        return False
 
     def exit(self):
         """
@@ -208,7 +196,6 @@ class CapturingDevice:
         """
         logging.info('Disconnecting from capturing device ...')
         self._exit = True
-        self._stop_capturing()
         self._release()
         logging.info('Disconnection successful')
 
@@ -217,113 +204,60 @@ class CapturingDevice:
         This function begins the thread with frame capturing
         :return:
         """
-        self._stop = False
-        self._capturing_thread = threading.Thread(target=self._capturing, args=[])
-        self._capturing_thread.start()
+        self._capturing = True
+        threading.Thread(target=self.capture_frame, args=[]).start()
 
-    def _stop_capturing(self):
-        """
-        This function sends a signal to capturing thread to stop capturing process
-        :return:
-        """
-        self._stop = True
-        time.sleep(self.capturing_interval / 1000.0)
-
-    def _capturing(self):
-        """
-        This function periodically captures a frame and copies it together with metadata into structure
-        :return:
-        """
-        # Set initial time point
-        cycle_begin = time.time() - self.capturing_interval / 1000.0
-
-        while not self._stop:
-
-            # Calculate one cycle length
-            cycle_begin = cycle_begin + self.capturing_interval / 1000.0
-
-            # If last cycle lasted much longer, we need to skip the current polling cycle to catch up in the future
-            if cycle_begin + 0.010 < time.time():
-                logging.error('Capturing skipped (increase time interval)')
-                continue
-
-            ret_value, frame, timestamp = self._capture_frame()
-            frame_saved, filename = self._save_frame(frame)
-
-            if ret_value and frame_saved and not self._stop:
-                self.metadata['timestamp'] = timestamp
-                frame_metadata = copy.deepcopy(self.metadata)
-                self._save_metadata(frame_metadata)
-                self._current_frame_id += 1
-
-            if self._stop:
-                break
-
-            # Calculate real cycle duration
-            cycle_dur = time.time() - cycle_begin
-
-            # If the cycle duration longer than given and no connection issues, jump directly to the next cycle
-            if cycle_dur > self.capturing_interval / 1000.0:
-                logging.warning('Capturing takes longer ' + str(cycle_dur) + ' than given time intervals')
-            else:
-                # Calculate how long we need to wait till the begin of the next cycle
-                time.sleep(max(self.capturing_interval / 1000.0 - (time.time() - cycle_begin), 0))
-
-    def _save_metadata(self, frame_metadata):
-        if self.storage_type == 'local':
-            self._save_metadata_local(frame_metadata)
-
-    def _save_metadata_local(self, frame_metadata):
-        try:
-            filepath = path.join(self.cfg['data_storage']['connection']['filepath'], 'metadata')
-            filename = self.cfg['data_storage']['connection']['filename_mask']
-            filename += '%0*d' % (6, self._current_frame_id)
-            filename += '.json'
-            fullname = path.join(filepath, filename)
-        except:
-            logging.error(
-                self.module_name + 'Impossible saving path:' + filepath + ' ' + filename)
-
-        try:
-            with open(fullname, 'w') as outfile:
-                dump(frame_metadata, outfile, skipkeys=True, indent=4)
-                logging.info('Metadata saved as ' + fullname)
-        except:
-            logging.error(
-                self.module_name + 'Saving metadata as ' + fullname + ' failed')
-
-    def _capture_frame(self):
+    def capture_frame(self):
         """
         This function captures a frame from the capturing device
         :return:
         """
-        if self.capture_type == 'local_camera_cv2':
-            return self._capture_frame_cv2()
-        elif self.capture_type == 'local_camera_jetson':
-            return self._capture_frame_local_jetson()
-        elif self.capture_type == 'rtmp':
-            return self._capture_frame_cv2()
+        if self._capturing:
+            status = {'code': 500, 'message': 'capturing device busy'}
+            return status, None, int(round(time.time() * 1000))
+
+        # Try to reconnect first
+        if not self._initialised:
+            self.start()
+
+        if not self._initialised:
+            status = {'code': 500, 'message': 'capturing device not initialised'}
+            return status, None, int(round(time.time() * 1000))
+
+        if self._cfg['capturing_device']['type'] == 'local_camera_cv2':
+            ret, frame, timestamp = self._capture_frame_cv2()
+        elif self._cfg['capturing_device']['type'] == 'local_camera_jetson':
+            ret, frame, timestamp = self._capture_frame_local_jetson()
+        elif self._cfg['capturing_device']['type'] == 'rtmp':
+            ret, frame, timestamp = self._capture_frame_cv2()
+        else:
+            ret, frame, timestamp = False, None, int(round(time.time() * 1000))
+
+        if ret:
+            status = {'code': 200, 'message': 'frame captured'}
+            return status, frame, timestamp
+        else:
+            status = {'code': 500, 'message': 'error capturing frame'}
+            return status, frame, timestamp
 
     def _capture_frame_cv2(self):
         """
         This function gets frame from capturing device and returns frame variable with
         :return: Return frame
         """
-        return_value, frame = self.camera.read()
+        ret, frame_raw = self._camera.read()
         timestamp = int(round(time.time() * 1000))
+        if ret:
+            logging.info('Frame captured')
+            frame_str = _convert_frame_to_str(frame_raw)
+            frame = {'frame': frame_str, 'size': frame_raw.shape, 'colorspace': 'BGR'}
 
-        # TODO: uncomment while debugging
-        # return_value = True
-        # frame = cv2.imread('test_image.jpg', 0)
-
-        if return_value:
-            logging.info(
-                self.module_name + 'Frame captured')
         else:
-            logging.error(
-                self.module_name + 'Capturing frame failed')
+            frame = None
+            logging.error('Capturing frame failed')
 
-        return return_value, frame, timestamp
+        self._capturing = False
+        return ret, frame, timestamp
 
     def _capture_frame_local_jetson(self):
         """
@@ -333,94 +267,25 @@ class CapturingDevice:
         # TODO: add support
         return False, None, None
 
-    def _save_frame(self, frame):
-        """
-        This function saves frame
-        :param frame:
-        :return:
-        """
-        if self.storage_type == 'local':
-            return self._save_frame_locally(frame)
-        elif self.storage_type == 'ftp':
-            return self._save_frame_ftp(frame)
-        elif self.storage_type == 'dataverse':
-            return self._save_frame_dataverse(frame)
+    def get_camera_status(self):
+        if self._initialised:
+            msg = 'camera initialised'
+        else:
+            msg = 'camera not initialised'
+        initialisation_status = {'status': self._initialised, 'message': msg}
 
-    def _save_frame_locally(self, frame):
-        """
-        This function saves current frame locally
-        :return:  Status of saving process: True - Successful, False - Unsuccessful
-        """
-        filepath = ''
-        filename = ''
-        if type(frame) == 'NoneType':
-            ret = False
-            logging.error(
-                self.module_name + 'No frame to save')
-            return ret, None
+        if self._capturing:
+            msg = 'camera capturing'
+        else:
+            msg = 'camera idle'
+        capturing_status = {'status': self._capturing, 'message': msg}
 
-        try:
-            filepath = path.join(self.cfg['data_storage']['connection']['filepath'], 'frames')
-            filename = self.cfg['data_storage']['connection']['filename_mask']
-            filename += '%0*d' % (6, self._current_frame_id)
-            filename += '.png'
-            fullname = path.join(filepath, filename)
-        except:
-            logging.error(
-                self.module_name + 'Invalid saving path:' + filepath + ' ' + filename)
+        return {'status': {'initialisation': initialisation_status, 'capturing': capturing_status}, 'timestamp': int(round(time.time() * 1000))}
 
-        try:
-            ret = cv2.imwrite(fullname, frame)
-            logging.info(
-                self.module_name + 'Frame saved as ' + fullname)
-        except:
-            logging.err(
-                self.module_name + 'Saving as ' + fullname + ' failed')
-        return ret, filename
+def _convert_frame_to_str(frame):
+    # https://jdhao.github.io/2020/03/17/base64_opencv_pil_image_conversion/
 
-    def _save_frame_ftp(self, frame):
-        """
-        This function saves frame on ftp server
-        :param frame:
-        :return:
-        """
-        # TODO: add support
-        return False, 'FTP: not programmed'
-
-    def _save_frame_dataverse(self, frame):
-        """
-        This function saves frame on dataverse server
-        :param frame:
-        :return:
-        """
-        # TODO: add support
-        return False, 'dataverse: not programmed'
-
-
-    def test_camera(self):
-        """
-        This function outputs video stream in window
-        :return:
-        """
-        self._initialise()
-
-        # TODO: comment during debugging
-        if not self._initialised:
-            return
-
-        self._configure()
-        time.sleep(1)
-
-        while True:
-            return_value, frame = self.camera.read()
-            cv2.imshow('frame', frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        cv2.destroyAllWindows()
-
-    def output_web(self):
-        """
-        This function streams video on a webpage
-        :return:
-        """
-        pass
+    _, frame_arr = cv2.imencode('.png', frame)
+    frame_bytes = frame_arr.tobytes()
+    frame_b64 = b64encode(frame_bytes)
+    return frame_b64.decode('utf-8')
