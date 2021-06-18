@@ -1,6 +1,6 @@
-PyYAML
-opencv-python
-numpy
-jsonschema
-influxdb
--e git://github.com/vkhaydarov/planteye-common.git#egg=planteye-common
+PyYAML~=5.4.1
+numpy~=1.20.3
+opencv-python~=4.5.2.52
+jsonschema~=3.2.0
+Flask~=2.0.0
+logging~=0.4.9.6

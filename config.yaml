@@ -7,31 +7,29 @@ capturing_device:
     CAP_PROP_FRAME_HEIGHT: 1280
     CAP_PROP_FRAME_WIDTH: 720
     CAP_PROP_FPS: 30
-  capturing_interval: 1000
-data_storage:
-  type: local
-  connection:
-    filepath: /var/data/vision/
-    filename_mask: image_
-buffer:
-  max_size: 100
-influxdb:
-  host: 127.0.0.1
-  port: 8086
-  user: root
-  password: root
-  database: CV
-  db_user: db_user
-  db_password: db_password
-  reconnect_interval: 10000
-  write_interval: 10000
-  metric_id: flow_regime, camera top
-  measurement: flow_regime
+api:
+  url: 127.0.0.1
+  port: 5000
 metadata:
-  '010F': RaspPi
-  '0110': HQ Camera v1.1
-  '0112': 1
-  '829D': 1.0
-event_logger:
-  publish: false
-  print_level: DEBUG
+  '010F': RaspPi # Manufacturer of recording equipment
+  '0110': HQ Camera v1.1 # The model name or model number of the equipment
+  'A432': 6mm f/1.2 # Lens specification.
+  'A433': RPIZ # Lens manufacturer.
+  'A434': PT361060M3MP12 # Lens model. 
+  '013B': P2O-Lab # This tag records the name of the camera owner, photographer or image creator.
+  '0131': PlantEye/Vision, 1.0.0 # This tag records the name and version of the software.
+  '9208': Vessel light, 2.5 W # The kind of light source.
+  '9206': 0.03 # The distance to the subject, given in meters.
+  '0140': HSV  # A color map for palette color images. 
+  '0112': 1 # The image orientation
+  '829D': 1.2 # The F number.
+  '8827': 100 # This tag indicates the ISO speed value of a camera or input device that is defined in ISO 12232. 
+  '9201': 1/8000 # Shutter speed.
+  '9202': 1.2 # The lens aperture.
+  '9203': 50 # The value of brightness.
+  '920A': 6 # The actual focal length of the lens, in mm.
+  'A407': 1.0 # Image gain adjustment.
+  'A408': 0 # Contrast.
+  'A409': 0 # Saturation.
+  'A40A': 0 # Sharpness.
+  'Beleuchtung': 'natural'
