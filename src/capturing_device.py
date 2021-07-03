@@ -1,8 +1,9 @@
 import cv2
 import logging
-import time
+from time import sleep, time
 import threading
 from base64 import b64encode
+from numpy import ndarray
 
 
 class CapturingDevice:
@@ -214,7 +215,7 @@ class CapturingDevice:
         """
         if self._capturing:
             status = {'code': 500, 'message': 'capturing device busy'}
-            return status, None, int(round(time.time() * 1000))
+            return status, None, int(round(time() * 1000))
 
         # Try to reconnect first
         if not self._initialised:
@@ -222,7 +223,7 @@ class CapturingDevice:
 
         if not self._initialised:
             status = {'code': 500, 'message': 'capturing device not initialised'}
-            return status, None, int(round(time.time() * 1000))
+            return status, None, int(round(time() * 1000))
 
         if self._cfg['capturing_device']['type'] == 'local_camera_cv2':
             ret, frame, timestamp = self._capture_frame_cv2()
@@ -231,7 +232,7 @@ class CapturingDevice:
         elif self._cfg['capturing_device']['type'] == 'rtmp':
             ret, frame, timestamp = self._capture_frame_cv2()
         else:
-            ret, frame, timestamp = False, None, int(round(time.time() * 1000))
+            ret, frame, timestamp = False, None, int(round(time() * 1000))
 
         if ret:
             status = {'code': 200, 'message': 'frame captured'}
@@ -246,18 +247,15 @@ class CapturingDevice:
         :return: Return frame
         """
         ret, frame_raw = self._camera.read()
-        timestamp = int(round(time.time() * 1000))
+        timestamp = int(round(time() * 1000))
         if ret:
             logging.info('Frame captured')
-            frame_str = _convert_frame_to_str(frame_raw)
-            frame = {'frame': frame_str, 'size': frame_raw.shape, 'colorspace': 'BGR'}
-
         else:
-            frame = None
+            frame_raw = None
             logging.error('Capturing frame failed')
 
         self._capturing = False
-        return ret, frame, timestamp
+        return ret, frame_raw, timestamp
 
     def _capture_frame_local_jetson(self):
         """
@@ -280,12 +278,14 @@ class CapturingDevice:
             msg = 'camera idle'
         capturing_status = {'status': self._capturing, 'message': msg}
 
-        return {'status': {'initialisation': initialisation_status, 'capturing': capturing_status}, 'timestamp': int(round(time.time() * 1000))}
+        return {'status': {'initialisation': initialisation_status, 'capturing': capturing_status}, 'timestamp': int(round(time() * 1000))}
 
-def _convert_frame_to_str(frame):
+
+def convert_frame_to_string(raw_frame):
     # https://jdhao.github.io/2020/03/17/base64_opencv_pil_image_conversion/
 
-    _, frame_arr = cv2.imencode('.png', frame)
+    _, frame_arr = cv2.imencode('.png', raw_frame)
     frame_bytes = frame_arr.tobytes()
     frame_b64 = b64encode(frame_bytes)
-    return frame_b64.decode('utf-8')
+    frame_str = frame_b64.decode('utf-8')
+    return frame_str
