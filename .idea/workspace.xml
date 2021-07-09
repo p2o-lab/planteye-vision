@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f07f7c46-8c84-4b38-a41e-fad3132ec884" name="Default Changelist" comment="Moving Dataverse functions to another library, bug fixing">
+    <list default="true" id="f07f7c46-8c84-4b38-a41e-fad3132ec884" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example_camera_setup.MD" beforeDir="false" afterPath="$PROJECT_DIR$/example_camera_setup.MD" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -175,11 +174,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.camera_test" />
       <item itemvalue="Python.dataverse_test" />
       <item itemvalue="Python.export_to_dataverse" />
       <item itemvalue="Python.main" />
       <item itemvalue="Python.test_camera" />
-      <item itemvalue="Python.camera_test" />
     </list>
     <recent_temporary>
       <list>
@@ -266,6 +265,6 @@
     <SUITE FILE_PATH="coverage/Vision$test_camera.coverage" NAME="test_camera Coverage Results" MODIFIED="1610893998694" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/planteye_vision$dataverse_test.coverage" NAME="dataverse_test Coverage Results" MODIFIED="1618563516365" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Vision$main.coverage" NAME="main Coverage Results" MODIFIED="1610893500543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/planteye_vision$main.coverage" NAME="main Coverage Results" MODIFIED="1625764430680" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/planteye_vision$main.coverage" NAME="main Coverage Results" MODIFIED="1625820431812" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
