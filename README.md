@@ -9,6 +9,38 @@ To run the script be sure that config-file (config.yaml) is proper and then run 
 python3 main.py
 ```
 
+## Description of REST API interface
+### Get frame
+This request captures a single frame and returns json data with string encoded frame, metadata and labels.
+
+URL:
+/get_frame
+
+Method:
+GET
+
+URL Params:
+No parameters needed
+
+Success Response:
+Code: 200
+Content:
+{
+    "frame": {
+        "colorspace": "BGR", "frame": "frame encoded as string", "frame_shape": [2000, 2500, 3]
+            },
+    "labels": {
+        "flow_regime": {"description": "flooded", "value": 0}
+            },
+    "metadata": {
+        "exif": {"010F": "Raspberry Pi"},
+        "tags": {"light_condition": {"unit": "-", "value": "natural"}, "stirrer_rotational_speed": {"unit": "rpm", "value": 100}
+        }
+    },
+    "status": {"code": 200, "message": "frame captured"},
+    "timestamp": 1625820453946
+}
+
 ## Configure
 Create a config file (config.yaml) according to the following structure:
 ```yaml
@@ -24,32 +56,22 @@ api:
   url: localhost
   port: 5000
 metadata:
-  '010F': RaspPi # Manufacturer of recording equipment
-  '0110': HQ Camera v1.1 # The model name or model number of the equipment
-  'A432': 6mm f/1.2 # Lens specification.
-  'A433': RPIZ # Lens manufacturer.
-  'A434': PT361060M3MP12 # Lens model. 
-  '013B': P2O-Lab # This tag records the name of the camera owner, photographer or image creator.
-  '0131': PlantEye/Vision, 1.0.0 # This tag records the name and version of the software.
-  '9208': Vessel light, 2.5 W # The kind of light source.
-  '9206': 0.03 # The distance to the subject, given in meters.
-  '0140': HSV  # A color map for palette color images. 
-  '0112': 1 # The image orientation
-  '829D': 1.2 # The F number.
-  '8827': 100 # This tag indicates the ISO speed value of a camera or input device that is defined in ISO 12232. 
-  '9201': 1/8000 # Shutter speed.
-  '9202': 1.2 # The lens aperture.
-  '9203': 50 # The value of brightness.
-  '920A': 6 # The actual focal length of the lens, in mm.
-  'A407': 1.0 # Image gain adjustment.
-  'A408': 0 # Contrast.
-  'A409': 0 # Saturation.
-  'A40A': 0 # Sharpness.
-  'Beleuchtung': 'natural'
-
+  'exif':
+    '010F': Raspberry Pi # Manufacturer of recording equipment
+    '0110': HQ Camera v1.1 # The model name or model number of the equipment
+...
+  'tags':
+    'light_condition':
+      'value': 'natural'
+      'unit': '-'
+...
+'labels':
+  'flow_regime':
+    'value': 0
+    'description': 'flooded'
+...
 ```
-Further nodeIds can be added in the section with Metrics.
-In order to generate conform config-files for Process Equipment Assemblies based on MTP-files, please use https://github.com/vkhaydarov/planteye-mtp2cfg.
+Further metadata, tags and labels can be added.
 
 ## Requirements
 To install requirements use the following command:

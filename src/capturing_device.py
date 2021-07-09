@@ -1,9 +1,8 @@
 import cv2
 import logging
-from time import sleep, time
+from time import time
 import threading
 from base64 import b64encode
-from numpy import ndarray
 
 
 class CapturingDevice:
