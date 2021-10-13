@@ -1,4 +1,5 @@
 from src.capturing_device_local_camera import CapturingDeviceLocalCamera
+from src.capturing_device_baumer_vax import CapturingDeviceBaumerVAX
 from src.schema import validate_cfg
 from yaml import safe_load
 import logging
@@ -41,7 +42,10 @@ if __name__ == '__main__':
         print(validation_msg)
     #   exit(1)
 
-    cap_dev = CapturingDeviceLocalCamera(cfg=cfg)
+    if cfg['capturing_device']['type'] == 'local_camera_cv2':
+        cap_dev = CapturingDeviceLocalCamera(cfg=cfg)
+    elif cfg['capturing_device']['type'] == 'baumer_camera_neoapi':
+        cap_dev = CapturingDeviceBaumerVAX(cfg=cfg)
 
     api = Flask(__name__)
     if 'metadata' in cfg:
