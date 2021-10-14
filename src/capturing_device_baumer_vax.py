@@ -101,8 +101,10 @@ class CapturingDeviceBaumerVAX(CapturingDevice):
     def __connect(self):
         try:
             self.__camera.Connect(self.__cfg['capturing_device']['connection']['device_id'])
-        except neoapi.NotConnectedException:
-            logging.error('Capturing device not connected... trying again')
+        except neoapi.NotConnectedException as exc:
+            logging.error('Capturing device not connected... trying again', exc_info=exc)
+        except neoapi.NoAccessException as exc:
+            logging.error('Capturing device not connected... trying again', exc_info=exc)
 
     def capture_frame(self) -> (bool, np.array, int):
         """
