@@ -87,10 +87,10 @@ class CapturingDeviceBaumerVAX(CapturingDevice):
         if not self.__camera.IsConnected():
             return {}
         return {
-            'id': self.__camera.GetId(),
-            'model_name': self.__camera.GetModelName(),
-            'serial_number': self.__camera.GetSerialNumber(),
-            'vendor_name': self.__camera.GetVendorName(),
+            'id': neoapi.CamInfo().GetId(),
+            'model_name': neoapi.CamInfo().GetModelName(),
+            'serial_number': neoapi.CamInfo().GetSerialNumber(),
+            'vendor_name': neoapi.CamInfo().GetVendorName(),
         }
 
     def get_camera_configuration(self):
