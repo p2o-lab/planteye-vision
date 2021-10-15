@@ -2,5 +2,6 @@ jsonschema
 opencv-python
 PyYAML
 Flask
-numpy==1.19.4
+numpy
 neoapi
+opcua

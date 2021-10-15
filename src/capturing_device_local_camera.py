@@ -28,7 +28,7 @@ class CapturingDeviceLocalCamera(CapturingDevice):
         :return:
         """
         configured = True
-        for parameter, value in self.__cfg['capturing_device']['parameters'].items():
+        for parameter, value in self.__cfg['parameters'].items():
             configured *= self.__set_parameter(parameter, value)
 
         if configured:
@@ -77,7 +77,7 @@ class CapturingDeviceLocalCamera(CapturingDevice):
         Initialises capturing device.
         :return:
         """
-        self.__camera = cv2.VideoCapture(self.__cfg['capturing_device']['connection']['device_id'])
+        self.__camera = cv2.VideoCapture(self.__cfg['connection']['device_id'])
         if self.__camera.isOpened():
             logging.info('Capturing device initialised successfully')
             self.__initialised = True
@@ -155,3 +155,14 @@ class CapturingDeviceLocalCamera(CapturingDevice):
         return {'status': {'initialised': initialisation_status,
                            'capturing': capturing_status},
                 'timestamp': int(round(time() * 1000))}
+
+    def get_camera_details(self):
+        return {
+            'id': 'no data',
+            'model_name': 'generic',
+            'serial_number': 'no data',
+            'vendor_name': 'generic',
+        }
+
+    def get_camera_configuration(self):
+        return {}
