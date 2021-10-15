@@ -3,5 +3,4 @@ opencv-python
 PyYAML
 Flask
 numpy
-neoapi
 opcua
