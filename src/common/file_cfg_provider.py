@@ -1,6 +1,6 @@
-from src.cfg_provider import CfgProvider
+from src.common.cfg_provider import CfgProvider
 from yaml import safe_load
-from src.schema import validate_cfg
+from src.common.schema import validate_cfg
 import logging
 
 PATH_TO_VALIDATION_SCHEME = '../res/config_schema.json'

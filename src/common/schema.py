@@ -20,12 +20,9 @@ def validate_cfg(json_data, json_schema):
     :return: Validation status and message: True if config object is valid, otherwise False
     """
 
-    # Load validation schema
-    execute_api_schema = get_schema(json_schema)
-
-    # Validation process
     try:
-        validate(instance=json_data, schema=execute_api_schema)
+        config_file_schema = get_schema(json_schema)
+        validate(instance=json_data, schema=config_file_schema)
     except exceptions.ValidationError as err:
         return False, err
 

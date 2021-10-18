@@ -1,23 +1,27 @@
 from abc import ABC, abstractmethod
-from src.data_provider import DataProvider
-from src.cfg_provider import CfgProvider
+from src.extract.data_source import DataSource
+from src.common.cfg_provider import CfgProvider
 
 
-class ImageDataProvider(DataProvider, ABC):
+class ImageDataSource(DataSource, ABC):
     """
     This class describes generic capturing device
     """
 
     @abstractmethod
-    def provide_data(self):
+    def receive_data(self):
         pass
 
     @abstractmethod
-    def get_data_source_details(self):
+    def get_details(self):
         pass
 
     @abstractmethod
-    def configure(self, cfg_provider: CfgProvider):
+    def import_config(self, cfg_provider: CfgProvider):
+        pass
+
+    @abstractmethod
+    def configure(self):
         pass
 
     @abstractmethod

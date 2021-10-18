@@ -6,6 +6,7 @@ import threading
 logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%(funcName)s: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
+
 class OPCUANodePoller:
     def __init__(self, opcua_server, node_name, node_ns, node_id):
         self.opcua_server = opcua_server
@@ -29,7 +30,7 @@ class OPCUANodePoller:
             timestamp = data_variant.SourceTimestamp
             value = data_variant.Value.Value
             logging.info('Server %s, Node %s: Value polled (Timestamp %s, Value %s)' % (
-            self.opcua_server.get_url(), str(self.node_id), str(timestamp), str(value)))
+                self.opcua_server.get_url(), str(self.node_id), str(timestamp), str(value)))
             return value
         except Exception as exc:
             logging.info('Server %s, Node %s: Value polling failed' % (self.opcua_server.get_url(), str(self.node_id)),
@@ -52,14 +53,26 @@ class OPCUAServer:
         self.reconnect_interval = reconnect_interval
         self.connected_once = False
 
+        self.stop_flag = False
+        self.stopped = True
+
     def connect(self):
         """
         Creates separate thread to take care of connectivity
         :return:
         """
         self.connectivity_thread = threading.Thread(target=self.__connectivity_routine)
+        self.stopped = False
         self.connectivity_thread.start()
         time.sleep(1)
+
+    def disconnect(self):
+        logging.info('Disconnecting to OPC UA server %s ...' % self.opcua_url)
+        self.stop_flag = True
+        self.client.disconnect()
+        while not self.stopped:
+            time.sleep(0.1)
+            logging.info('Disconnected from OPC UA server %s' % self.opcua_url)
 
     def __single_connect(self):
         logging.info('Connecting to OPC UA server %s ...' % self.opcua_url)
@@ -77,6 +90,9 @@ class OPCUAServer:
         :return:
         """
         while True:
+            if self.stop_flag:
+                self.stopped = True
+                return
             self.check_connection()
             if not self.connection_status:
                 self.__single_connect()
@@ -104,10 +120,10 @@ class OPCUAServer:
 
 
 if __name__ == '__main__':
-    opcua_server = OPCUAServer('opc.tcp://opcuademo.sterfive.com:26543')
-    opcua_server.connect()
+    opcua_server_obj = OPCUAServer('opc.tcp://opcuademo.sterfive.com:26543')
+    opcua_server_obj.connect()
     time.sleep(1)
-    node_poller = OPCUANodePoller(opcua_server, 'float_dynamic', 8, 'Scalar_Simulation_Float')
+    node_poller = OPCUANodePoller(opcua_server_obj, 'float_dynamic', 8, 'Scalar_Simulation_Float')
     while True:
         print(node_poller.get_value())
         time.sleep(1)

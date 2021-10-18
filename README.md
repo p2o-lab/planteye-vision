@@ -17,6 +17,7 @@ URL:
 ```html
 /get_frame
 ```
+The endpoint can be changed in the conifuguration file.
 
 Method:
 GET
@@ -27,50 +28,85 @@ No parameters needed
 Response:
 ```json
 {
-    "status": {
-        "get_frame_status": {
-            "code": 200,
-            "message": "Frame captured"
-        },
-        "conv_frame_status": {
-            "code": 200,
-            "message": "Conversion frame to str successful"
-        },
-        "get_metadata_status": {
-            "code": 200,
-            "message": "Metadata extraction/polling successful"
-        },
-        "get_labels_status": {
-            "code": 200,
-            "message": "Labels extraction/polling successful"
-        }
-    },
-    "camera":    { 
-      "information":  {
-        "id": "no data",
-        "model_name": "generic",
-        "serial_number": "no data",
-        "vendor_name": "generic"
+  "frame": {
+    "frame": "frame_serialised_as_string",
+    "frame_shape": [
+      480,
+      640,
+      3
+    ],
+    "frame_colormap": "BGR"
+  },
+  "data_source": {
+    "configuration": {
+      "type": "local_camera_cv2",
+      "connection": {
+        "device_id": 1
       },
-      "parameters": {}
+      "parameters": {
+        "Width": 720,
+        "ExposureTime": 720
+      }
     },
-    "timestamp": 1634313975509,
-    "frame": {
-        "frame": "frame encoded as string comes here",
-        "frame_shape": [
-            480,
-            640,
-            3
-        ],
-        "frame_colormap": "BGR"
+    "parameters": {},
+    "details": {
+      "id": 1,
+      "model_name": "Generic OpenCV camera",
+      "serial_number": "no data",
+      "vendor_name": "no data"
     }
+  },
+  "metadata": {
+    "exif": {
+      "8827": 100,
+      "9201": "1/8000"
+    },
+    "tags": {
+      "light_condition": {
+        "source": "static",
+        "value": "natural",
+        "unit": "-"
+      },
+      "stirrer_rotational_speed": {
+        "source": "opcua",
+        "access_data": {
+          "server": "opc.tcp://opcuademo.sterfive.com:26543",
+          "username": null,
+          "password": null,
+          "node_ns": 8,
+          "node_id": "Scalar_Simulation_Float"
+        },
+        "unit": "rpm",
+        "value": -275.49285888671875
+      },
+      "flow_regime": {
+        "source": "static",
+        "value": 0,
+        "description": "flooded"
+      }
+    }
+  },
+  "status": {
+    "frame_capturing": {
+      "code": 200,
+      "message": "Frame captured"
+    },
+    "frame_conversion_to_str": {
+      "code": 200,
+      "message": "Conversion frame to str successful"
+    },
+    "metadata_collection": {
+      "code": 200,
+      "message": "Metadata extraction/polling successful"
+    }
+  }
 }
 ```
 
 ## Configure
 Create a config file (config.yaml) according to the following structure:
 ```yaml
-capturing_device:
+data_source:
   type: local_camera_cv2
   connection:
     device_id: 0
@@ -78,7 +114,9 @@ capturing_device:
     CAP_PROP_FRAME_HEIGHT: 1280
     CAP_PROP_FRAME_WIDTH: 720
     CAP_PROP_FPS: 30
-api:
+data_sink:
+  name: PlantEye/Vision
+  endpoint: /get_frame
   url: localhost
   port: 5000
 metadata:
@@ -101,16 +139,15 @@ metadata:
         'node_id': Scalar_Simulation_Float
       'unit': rpm
 ...
-'labels':
-  'flow_regime':
-    'source': static
-    'value': 0
-    'description': 'flooded'
+      'flow_regime':
+        'source': static
+        'value': 0
+        'description': 'flooded'
 ...
 ```
 Further metadata, tags and labels can be added.
 
-### Supported camera types
+### Supported data sources types
 Use value "local_camera_cv2" in the field capturing_device.type for a local camera, e.g. USB or built-in camera.
 In this case the package opencv will be used to capture the frame.
 

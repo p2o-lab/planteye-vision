@@ -1,15 +1,16 @@
 ---
-capturing_device:
+data_source:
   type: local_camera_cv2 #baumer_camera_neoapi
   connection:
-    device_id: 0
+    device_id: 1
   parameters:
     Width: 720
     ExposureTime: 720
-api:
+data_sink:
   url: 0.0.0.0
   port: 5000
   name: 'PlantEye-Vision'
+  endpoint: '/get_frame'
 metadata:
   'exif':
     '010F': Raspberry Pi # Manufacturer of recording equipment
@@ -51,8 +52,7 @@ metadata:
         'node_ns': 8
         'node_id': Scalar_Simulation_Float
       'unit': slpm
-'labels':
-  'flow_regime':
-    'source': static
-    'value': 0
-    'description': flooded
+    'flow_regime':
+      'source': static
+      'value': 0
+      'description': flooded

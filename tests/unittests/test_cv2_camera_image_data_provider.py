@@ -1,14 +1,7 @@
-import yaml
+import time
 import pytest
-import logging
 
-from src.cv2_camera_image_data_provider import CV2CameraImageDataProvider
-
-logging.basicConfig(filename='test.log',
-                    filemode='w',
-                    format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%(funcName)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.DEBUG)
+from src.extract.opencv_generic_image_data_source import OpenCVGenericImageDataSource
 
 
 @pytest.fixture()
@@ -16,7 +9,7 @@ def create_dummy_cfg_dict():
     dummy_cfg_dict = {'capturing_device': {
         'type': 'local_camera_cv2',
         'connection': {
-            'device_id': 0
+            'device_id': 1
         }
     }
     }
@@ -26,17 +19,28 @@ def create_dummy_cfg_dict():
 
 @pytest.fixture()
 def webcam_constructor(create_dummy_cfg_dict):
-    camera_instance = CV2CameraImageDataProvider()
-    camera_instance.__configured = True
-    camera_instance.__cfg = create_dummy_cfg_dict
-    camera_instance.initialise()
+    camera_instance = OpenCVGenericImageDataSource()
+    camera_instance.configured = True
+    camera_instance.cfg = create_dummy_cfg_dict['capturing_device']
     return camera_instance
 
 
 def test_configure(webcam_constructor):
-    webcam_constructor
+    assert not webcam_constructor.set_parameter('invalid_parameter_name', 1280)
+    assert not webcam_constructor.set_parameter('CV_CAP_PROP_FRAME_WIDTH', 1280)
+    assert not webcam_constructor.set_parameter('CV_CAP_PROP_FRAME_HEIGHT', 720)
 
 
-def test_set_proper_parameter(webcam_constructor):
-    assert webcam_constructor.set_parameter('CV_CAP_PROP_FRAME_WIDTH', 1280)
-    assert webcam_constructor.set_parameter('CV_CAP_PROP_FRAME_HEIGHT', 720)
+def test_initialise_camera(webcam_constructor):
+    webcam_constructor.initialise()
+    assert webcam_constructor.initialised
+
+
+def test_provide_data(webcam_constructor):
+    webcam_constructor.initialise()
+    status, frame, timestamp = webcam_constructor.receive_data()
+    now_timestamp = int(round(time.time() * 1000))
+    assert status is not None
+    assert frame is not None
+    assert abs(timestamp-now_timestamp)<1000
+
