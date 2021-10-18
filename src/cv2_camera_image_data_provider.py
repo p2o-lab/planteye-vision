@@ -3,48 +3,32 @@ import cv2
 import numpy as np
 from time import time
 
-from src.capturing_device import CapturingDevice
+from src.camera_image_data_provider import CameraImageDataProvider
 
 
-class CapturingDeviceLocalCamera(CapturingDevice):
-    def __init__(self, cfg: dict):
+class CV2CameraImageDataProvider(CameraImageDataProvider):
+
+    def __init__(self):
         """
         Represents a local capturing device
-        :param cfg: dict: Configuration
         """
-        self.__cfg = cfg
-        self.__camera = None
-        self.__initialised = False
-        self.__configured = False
-        self.__connected = False
-        self.__capturing = False
+        super().__init__()
 
-        self.__initialise()
-        self.__configure()
-
-    def __configure(self):
+    def configure(self, cfg_provider):
         """
         Takes parameter set from configuration and apply them to capturing device
         :return:
         """
-        configured = True
-        for parameter, value in self.__cfg['parameters'].items():
-            configured *= self.__set_parameter(parameter, value)
+        super().configure(cfg_provider)
 
-        if configured:
-            logging.info('All parameters set to successfully')
-        else:
-            logging.warning('At least one parameter not set')
-        self.__configured = configured
-
-    def __set_parameter(self, parameter: str, requested_value: object) -> bool:
+    def set_parameter(self, parameter: str, requested_value: object) -> bool:
         """
         Sets a single parameter of capturing device.
         :param parameter: str: Parameter identificator of VideoCaptureProperties from OpenCV.
         List of available parameters and their description is to find on
         on https://docs.opencv.org/3.4/d4/d15/group__videoio__flags__base.html
         Please consider that not every capturing device supports all parameters.
-        :param: any type: requested_value: Desired value of the parameter
+        :param requested_value: any type: Desired value of the parameter
         :return: bool: True if the parameter is set successfully, False - if not
         """
         par = None
@@ -72,7 +56,7 @@ class CapturingDeviceLocalCamera(CapturingDevice):
             logging.warning('Setting parameter (' + parameter + ') unsuccessful. Actual value ' + str(new_value))
             return False
 
-    def __initialise(self):
+    def initialise(self):
         """
         Initialises capturing device.
         :return:
@@ -85,7 +69,7 @@ class CapturingDeviceLocalCamera(CapturingDevice):
             logging.error('Capturing device initialisation failed')
             self.__initialised = False
 
-    def __release(self):
+    def release(self):
         """
         Releases capturing device.
         :return:
@@ -102,7 +86,7 @@ class CapturingDeviceLocalCamera(CapturingDevice):
             logging.warning('Capturing device could not be released')
             self.__initialised = True
 
-    def capture_frame(self) -> (bool, np.array, int):
+    def provide_data(self) -> (bool, np.array, int):
         """
         Captures single frame.
         :return: Tuple of three variables:
@@ -115,7 +99,7 @@ class CapturingDeviceLocalCamera(CapturingDevice):
             return status, None, int(round(time() * 1000))
 
         if not self.__initialised:
-            self.__initialise()
+            self.initialise()
 
         if not self.__initialised:
             status = {'code': 500, 'message': 'Capturing device could not be initialised'}
@@ -134,29 +118,13 @@ class CapturingDeviceLocalCamera(CapturingDevice):
             status = {'code': 500, 'message': 'Error capturing frame'}
             return status, None, timestamp
 
+    def get_configuration(self):
+        return {}
+
     def get_status(self) -> dict:
-        """
-        Gets status of capturing device including whether the device initialised or not, is currently capturing or idle
-        along with unix timestamp in milliseconds.
-        :return: dict: Status in form of {'status: {'initialised': Value, 'capturing': Value}, 'timestamp': Value}
-        """
-        if self.__initialised:
-            msg = 'camera initialised'
-        else:
-            msg = 'camera not initialised'
-        initialisation_status = {'status': self.__initialised, 'message': msg}
+        return super().get_status()
 
-        if self.__capturing:
-            msg = 'camera capturing'
-        else:
-            msg = 'camera idle'
-        capturing_status = {'status': self.__capturing, 'message': msg}
-
-        return {'status': {'initialised': initialisation_status,
-                           'capturing': capturing_status},
-                'timestamp': int(round(time() * 1000))}
-
-    def get_camera_details(self):
+    def get_data_source_details(self):
         return {
             'id': 'no data',
             'model_name': 'generic',
@@ -164,5 +132,3 @@ class CapturingDeviceLocalCamera(CapturingDevice):
             'vendor_name': 'generic',
         }
 
-    def get_camera_configuration(self):
-        return {}

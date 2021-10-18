@@ -3,7 +3,7 @@ import numpy as np
 import neoapi
 from time import time, sleep
 
-from src.capturing_device import CapturingDevice
+from src.image_data_provider import CapturingDevice
 
 GET_IMAGE_TIMEOUT = 1000
 
@@ -106,7 +106,7 @@ class CapturingDeviceBaumerVAX(CapturingDevice):
         except neoapi.NoAccessException as exc:
             logging.error('Capturing device not connected... trying again', exc_info=exc)
 
-    def capture_frame(self) -> (bool, np.array, int):
+    def get_frame(self) -> (bool, np.array, int):
         """
         Captures single frame and returns it as a numpy array
         :return: Tuple of three variables:

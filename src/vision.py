@@ -6,19 +6,20 @@ import json
 import time
 
 from src.schema import validate_cfg
-from src.capturing_device_local_camera import CapturingDeviceLocalCamera
+from src.cv2_camera_image_data_provider import CapturingDeviceLocalCamera
 from src.capturing_device_baumer_vax import CapturingDeviceBaumerVAX
 from src.restapi_endpoint import RestAPIEndpoint
 from src.opcua_listener import OPCUAServer, OPCUANodePoller
 
 
 class Vision:
-    def __init__(self):
+    def __init__(self, data_provider):
         self.cfg = None
         self.cap_dev = None
         self.restapi_endpoint = None
         self.opcua_listeners = {}
         self.initialised = False
+        self.data_provider = data_provider
 
     def import_config(self, cfg_file):
         with open(cfg_file) as config_file:
@@ -47,13 +48,13 @@ class Vision:
         self.restapi_endpoint = RestAPIEndpoint(self.cfg['api'])
         self.restapi_endpoint.add_url_rule('/get_frame', 'Get frame', self.api_rule_get_frame)
 
-    def run_restapi(self):
-        if self.restapi_endpoint is not None:
-            self.restapi_endpoint.run()
-
     def run(self):
         if self.initialised:
             vis.run_restapi()
+
+    def run_restapi(self):
+        if self.restapi_endpoint is not None:
+            self.restapi_endpoint.run()
 
     def get_frame_from_camera(self):
         logging.debug('Get frame as str')
