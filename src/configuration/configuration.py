@@ -70,3 +70,19 @@ class RestAPIConfiguration:
             self.metadata = cfg_dict['metadata']
         else:
             self.metadata = {}
+
+
+class LocalShellConfiguration:
+    def __init__(self):
+        self.storage_path = '../data/'
+        self.time_interval = 1000
+        self.metadata = {}
+
+    def read(self, cfg_provider):
+        cfg_dict = cfg_provider.provide_config()
+        self.storage_path = cfg_dict['access']['storage_path']
+        self.time_interval = cfg_dict['access']['time_interval']
+        if 'metadata' in cfg_dict.keys():
+            self.metadata = cfg_dict['metadata']
+        else:
+            self.metadata = {}

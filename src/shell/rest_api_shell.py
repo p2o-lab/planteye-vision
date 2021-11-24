@@ -8,7 +8,7 @@ from src.configuration.configuration import RestAPIConfiguration
 
 class RestAPIShell(Shell):
     """
-    This class describes an REST API outlet
+    This class describes an REST API shell
     """
     def __init__(self):
         self.config = RestAPIConfiguration()

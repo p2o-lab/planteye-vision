@@ -51,10 +51,16 @@ inlet:
       interpretation: none
       description: a selected opcua variable
 shell:
-  rest_api:
-    type: rest_api
+  local:
+    type: local
     access:
-      host: 0.0.0.0
-      port: 5000
-      name: 'PlantEye-Vision'
-      endpoint: '/get_frame'
+      storage_path: ../data
+      time_interval: 1000
+#shell:
+#  rest_api:
+#    type: rest_api
+#    access:
+#      host: 0.0.0.0
+#      port: 5000
+#      name: 'PlantEye-Vision'
+#      endpoint: '/get_frame'

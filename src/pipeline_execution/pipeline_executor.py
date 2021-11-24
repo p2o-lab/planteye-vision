@@ -2,9 +2,10 @@ from src.inlet.generic_camera_inlet import GenericCameraInlet
 from src.inlet.static_data_inlet import StaticDataInlet
 from src.inlet.opcua_data_inlet import OPCUADataInlet
 from src.shell.rest_api_shell import RestAPIShell
-from src.transform.data_transformer import EncodeImageChunksToBase64, ChunksToDict
+from src.shell.periodic_shell import PeriodicShell
+from src.processors.data_processor import EncodeImageChunksToBase64, ChunksToDict
 
-from src.configuration.config_provider import FileConfigProvider, DictConfigProvider
+from src.configuration.config_provider import DictConfigProvider
 import json
 
 
@@ -35,11 +36,13 @@ class PipeLineExecutor:
                 inlet = StaticDataInlet()
             elif inlet_config_dict['type'] == 'opcua_variable':
                 inlet = OPCUADataInlet()
+            else:
+                continue
             inlet_config_provider = DictConfigProvider(inlet_name, inlet_config_dict)
             inlet.import_configuration(inlet_config_provider)
             inlet.apply_configuration()
             inlets_obj.append(inlet)
-            self.inlets = inlets_obj
+        self.inlets = inlets_obj
 
     def configure_shell(self):
         shells = self.config_dict['shell']
@@ -47,6 +50,8 @@ class PipeLineExecutor:
         for shell_name, shell_config_dict in shells.items():
             if shell_config_dict['type'] == 'rest_api':
                 self.shell = RestAPIShell()
+            elif shell_config_dict['type'] == 'local':
+                self.shell = PeriodicShell()
             shell_config_provider = DictConfigProvider(shell_name, shell_config_dict)
             self.shell.import_configuration(shell_config_provider)
             self.shell.attach_callback(self.single_execution)
@@ -57,10 +62,17 @@ class PipeLineExecutor:
         for inlet in self.inlets:
             data_chunks.append(inlet.retrieve_data())
         for transformer in self.transformers:
-            transformer.apply_transformation(data_chunks)
+            transformer.apply_processor(data_chunks)
         if isinstance(self.shell, RestAPIShell):
-            data_chunks_dict = ChunksToDict().apply_transformation(data_chunks)
+            EncodeImageChunksToBase64().apply_processor(data_chunks)
+            data_chunks_dict = ChunksToDict().apply_processor(data_chunks)
             return json.dumps(data_chunks_dict)
+        elif isinstance(self.shell, PeriodicShell):
+            return data_chunks
 
     def add_transformer(self, transformer):
         self.transformers.append(transformer)
+
+    def run(self):
+        self.read_configuration()
+        self.apply_configuration()
