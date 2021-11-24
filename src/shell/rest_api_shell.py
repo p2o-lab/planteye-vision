@@ -1,10 +1,9 @@
 from flask import Flask
 import logging
-import json
 import threading
 
 from src.shell.shell import Shell
-from src.common.configuration import RestAPIConfiguration
+from src.configuration.configuration import RestAPIConfiguration
 
 
 class RestAPIShell(Shell):
@@ -32,10 +31,15 @@ class RestAPIShell(Shell):
         endpoint = self.config.endpoint
         endpoint_name = self.config.endpoint_name
         self.webserver.add_url_rule(endpoint, endpoint_name, self.response_callback)
+        self.webserver.add_url_rule('/', 'homepage', self.homepage_callback)
         self.connect()
 
     def attach_callback(self, callback):
         self.response_callback = callback
+
+    def homepage_callback(self):
+        welcome_str = 'Welcome to PlantEye API. Available endpoint is %s' % self.config.endpoint
+        return welcome_str
 
     def connect(self):
         self.webserver_thread = threading.Thread(target=self.webserver.run)

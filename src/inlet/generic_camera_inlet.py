@@ -4,10 +4,10 @@ import cv2
 
 from src.inlet.camera_inlet import CameraInlet
 from src.common.timestamp import get_timestamp
-from src.common.data_chunk import GeneralDataChunk
-from src.common.data_chunk_status import CapturingStatus
-from src.common.metadata_chunk import MetadataChunkData
-from src.common.data_chunk_data import DataChunkValue
+from src.data_chunks.data_chunk import GeneralDataChunk
+from src.data_chunks.data_chunk_status import CapturingStatus
+from src.data_chunks.metadata_chunk import MetadataChunkData
+from src.data_chunks.data_chunk_data import DataChunkImage
 
 
 class GenericCameraInlet(CameraInlet):
@@ -73,7 +73,7 @@ class GenericCameraInlet(CameraInlet):
             self.camera_status.initialised = True
 
     def retrieve_data(self):
-        data_chunk = GeneralDataChunk()
+        data_chunk = GeneralDataChunk(self.name)
 
         if not self.camera_status.initialised:
             self.connect()
@@ -98,7 +98,7 @@ class GenericCameraInlet(CameraInlet):
         self.camera_status.capturing = False
 
         if captured:
-            data_chunk.add_data(DataChunkValue('frame', frame_np))
+            data_chunk.add_data(DataChunkImage('frame', frame_np))
 
             status = CapturingStatus(0)
             data_chunk.add_status(status)

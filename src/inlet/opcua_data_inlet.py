@@ -1,17 +1,14 @@
 import logging
 from time import sleep
-import cv2
 from opcua import Client, ua
 import threading
 
-from src.common.timestamp import get_timestamp
-
 from src.inlet.inlet import Inlet
-from src.common.configuration import OPCUAValueConfiguration
-from src.common.data_chunk import GeneralDataChunk
-from src.common.data_chunk_data import DataChunkValue
-from src.common.metadata_chunk import MetadataChunkData
-from src.common.data_chunk_status import OPCUAReadStatus
+from src.configuration.configuration import OPCUAValueConfiguration
+from src.data_chunks.data_chunk import GeneralDataChunk
+from src.data_chunks.data_chunk_data import DataChunkValue
+from src.data_chunks.metadata_chunk import MetadataChunkData
+from src.data_chunks.data_chunk_status import OPCUAReadStatus
 
 
 class OPCUADataInlet(Inlet):
@@ -20,13 +17,13 @@ class OPCUADataInlet(Inlet):
     """
     def __init__(self):
         self.config = OPCUAValueConfiguration()
-        self.variable_name = 'unnamed'
+        self.name = None
         self.opcua_client = None
         self.node_obj = None
 
     def import_configuration(self, config_provider):
         self.config.read(config_provider)
-        self.variable_name = config_provider.provide_name()
+        self.name = config_provider.provide_name()
 
     def apply_configuration(self):
         opcua_server_url = self.config.server_url
@@ -37,14 +34,14 @@ class OPCUADataInlet(Inlet):
 
     def retrieve_data(self):
         value = self.poll_node()
-        data_chunk = GeneralDataChunk()
+        data_chunk = GeneralDataChunk(self.name)
         if value is None:
             status = OPCUAReadStatus(99)
             data_chunk.add_status(status)
         else:
             status = OPCUAReadStatus(0)
             data_chunk.add_status(status)
-            data_chunk.add_data(DataChunkValue(self.variable_name, value))
+            data_chunk.add_data(DataChunkValue(self.name, value))
 
         for metadata_variable, metadata_value in self.config.metadata.items():
             data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))
@@ -59,7 +56,7 @@ class OPCUADataInlet(Inlet):
     def poll_node(self):
         if not self.opcua_client.get_connection_status():
             logging.warning(
-                'Cannot poll %s from OPCA UA server %s (no connection)' % (self.variable_name, self.opcua_client.get_url()))
+                'Cannot poll %s from OPCA UA server %s (no connection)' % (self.name, self.opcua_client.get_url()))
             return None
         try:
             node_obj = ua.NodeId(self.config.node_id, self.config.namespace)

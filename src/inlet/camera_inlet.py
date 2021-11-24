@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from src.inlet.inlet import Inlet
 from src.common.camera_status import CameraStatus
-from src.common.configuration import CameraConfiguration
+from src.configuration.configuration import CameraConfiguration
 
 
 class CameraInlet(Inlet):
@@ -10,10 +10,12 @@ class CameraInlet(Inlet):
     """
     def __init__(self):
         self.config = CameraConfiguration()
+        self.name = None
         self.camera_object = None
         self.camera_status = CameraStatus()
 
     def import_configuration(self, config_provider):
+        self.name = config_provider.provide_name()
         self.config.read(config_provider)
 
     def apply_configuration(self):

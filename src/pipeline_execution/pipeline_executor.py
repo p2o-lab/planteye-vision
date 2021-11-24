@@ -2,9 +2,9 @@ from src.inlet.generic_camera_inlet import GenericCameraInlet
 from src.inlet.static_data_inlet import StaticDataInlet
 from src.inlet.opcua_data_inlet import OPCUADataInlet
 from src.shell.rest_api_shell import RestAPIShell
+from src.transform.data_transformer import EncodeImageChunksToBase64, ChunksToDict
 
-from src.common.config_provider import FileConfigProvider, DictConfigProvider
-import time
+from src.configuration.config_provider import FileConfigProvider, DictConfigProvider
 import json
 
 
@@ -12,10 +12,10 @@ class PipeLineExecutor:
     def __init__(self, config_provider):
         self.config_provider = config_provider
         self.config_dict = None
+        self.shell = None
         self.inlets = []
         self.transformers = []
         self.outlets = []
-        self.shell = None
 
     def read_configuration(self):
         self.config_dict = self.config_provider.provide_config()
@@ -55,12 +55,12 @@ class PipeLineExecutor:
     def single_execution(self):
         data_chunks = []
         for inlet in self.inlets:
-            data_chunks.append(inlet.retrieve_data().as_dict())
-        print(data_chunks)
-        return json.dumps({'data': 'some data'})
+            data_chunks.append(inlet.retrieve_data())
+        for transformer in self.transformers:
+            transformer.apply_transformation(data_chunks)
+        if isinstance(self.shell, RestAPIShell):
+            data_chunks_dict = ChunksToDict().apply_transformation(data_chunks)
+            return json.dumps(data_chunks_dict)
 
-
-cfg_provider = FileConfigProvider('config', '../config.yaml')
-pipeline_exec = PipeLineExecutor(cfg_provider)
-pipeline_exec.read_configuration()
-pipeline_exec.apply_configuration()
+    def add_transformer(self, transformer):
+        self.transformers.append(transformer)
