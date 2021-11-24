@@ -5,7 +5,6 @@ class MetadataObject(ABC):
     """
     This class describes generic metadata provider
     """
-    @abstractmethod
     def __init__(self, item_name, item_dict):
         self.item_name = item_name
         self.item_dict = item_dict

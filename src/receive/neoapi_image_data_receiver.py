@@ -3,12 +3,12 @@ import numpy as np
 import neoapi
 from time import time, sleep
 
-from src.extract.camera_image_data_provider import CameraImageDataSource
+from src.receive.camera_image_data_receiver import CameraImageDataReceiver
 
 GET_IMAGE_TIMEOUT = 1000
 
 
-class NeoApiImageDataSource(CameraImageDataSource):
+class NeoApiImageDataReceiver(CameraImageDataReceiver):
     def __init__(self, cfg: dict):
         super().__init__()
 

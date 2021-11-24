@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
-from src.extract.data_source import DataSource
+from src.receive.data_receiver import DataReceiver
 from src.common.cfg_provider import CfgProvider
 
 
-class MetadataDataSource(DataSource, ABC):
+class MetadataDataReceiver(DataReceiver, ABC):
     """
     This class describes generic metadata provider
     """
-    @abstractmethod
     def __init__(self):
         self.cfg = None
         self.initialised = False
@@ -21,7 +20,6 @@ class MetadataDataSource(DataSource, ABC):
     def get_details(self):
         pass
 
-    @abstractmethod
     def import_config(self, cfg_provider: CfgProvider):
         """
         Takes parameter set from configuration

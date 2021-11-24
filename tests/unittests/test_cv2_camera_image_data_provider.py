@@ -1,7 +1,7 @@
 import time
 import pytest
 
-from src.extract.opencv_generic_image_data_source import OpenCVGenericImageDataSource
+from src.receive.opencv_generic_image_data_receiver import OpenCVGenericImageDataReceiver
 
 
 @pytest.fixture()
@@ -19,7 +19,7 @@ def create_dummy_cfg_dict():
 
 @pytest.fixture()
 def webcam_constructor(create_dummy_cfg_dict):
-    camera_instance = OpenCVGenericImageDataSource()
+    camera_instance = OpenCVGenericImageDataReceiver()
     camera_instance.configured = True
     camera_instance.cfg = create_dummy_cfg_dict['capturing_device']
     return camera_instance

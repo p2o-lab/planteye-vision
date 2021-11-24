@@ -1,6 +1,6 @@
 import time
 
-from src.extract.OPCUAMetadataObject import OPCUAMetadataObject
+from src.receive.OPCUAMetadataObject import OPCUAMetadataObject
 
 
 def simulation_server_configuration_dict():

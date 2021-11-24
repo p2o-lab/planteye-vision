@@ -1,4 +1,4 @@
-from src.extract.metadata_object import MetadataObject
+from src.receive.metadata_object import MetadataObject
 
 
 class StaticMetadataObject(MetadataObject):

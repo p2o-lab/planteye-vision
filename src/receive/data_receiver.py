@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class DataSource (ABC):
+class DataReceiver(ABC):
 
     @abstractmethod
     def receive_data(self):
@@ -9,4 +9,8 @@ class DataSource (ABC):
 
     @abstractmethod
     def get_details(self):
+        pass
+
+    @abstractmethod
+    def configure(self):
         pass

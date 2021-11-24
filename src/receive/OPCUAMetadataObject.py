@@ -1,5 +1,5 @@
-from src.extract.metadata_object import MetadataObject
-from src.extract.opcua_listener import OPCUAServer, OPCUANodePoller
+from src.receive.metadata_object import MetadataObject
+from src.receive.opcua_listener import OPCUAServer, OPCUANodePoller
 
 
 class OPCUAMetadataObject(MetadataObject):

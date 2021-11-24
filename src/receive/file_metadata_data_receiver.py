@@ -1,13 +1,13 @@
-from src.extract.metadata_data_source import MetadataDataSource
+from src.receive.metadata_data_receiver import MetadataDataReceiver
 from src.common.cfg_provider import CfgProvider
 from time import time, sleep
 import logging
-from src.extract.StaticMetadataObject import StaticMetadataObject
-from src.extract.OPCUAMetadataObject import OPCUAMetadataObject
+from src.receive.StaticMetadataObject import StaticMetadataObject
+from src.receive.OPCUAMetadataObject import OPCUAMetadataObject
 from src.common.file_cfg_provider import FileCfgProvider
 
 
-class FileMetadataDataSource(MetadataDataSource):
+class FileMetadataDataReceiver(MetadataDataReceiver):
     """
     This class describes metadata provider where metadata originates directly from config file
     """
@@ -47,7 +47,7 @@ logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%
 
 if __name__ == '__main__':
     cfg_provider = FileCfgProvider('../config.yaml')
-    metadata_provider = FileMetadataDataSource()
+    metadata_provider = FileMetadataDataReceiver()
     metadata_provider.import_config(cfg_provider)
     metadata_provider.configure()
     while True:
