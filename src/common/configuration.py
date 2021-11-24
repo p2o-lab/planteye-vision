@@ -50,3 +50,23 @@ class OPCUAValueConfiguration:
         self.namespace = cfg_dict['access']['node_ns']
         self.node_id = cfg_dict['access']['node_id']
         self.metadata = cfg_dict['metadata']
+
+
+class RestAPIConfiguration:
+    def __init__(self):
+        self.host = None
+        self.port = 5000
+        self.endpoint_name = 'Rest API'
+        self.endpoint = '/endpoint'
+        self.metadata = {}
+
+    def read(self, cfg_provider):
+        cfg_dict = cfg_provider.provide_config()
+        self.host = cfg_dict['access']['host']
+        self.port = cfg_dict['access']['port']
+        self.endpoint_name = cfg_dict['access']['name']
+        self.endpoint = cfg_dict['access']['endpoint']
+        if 'metadata' in cfg_dict.keys():
+            self.metadata = cfg_dict['metadata']
+        else:
+            self.metadata = {}

@@ -35,7 +35,7 @@ class OPCUADataInlet(Inlet):
         self.opcua_client = OPCUAClient(opcua_server_url, opcua_server_username, opcua_server_pwd)
         self.opcua_client.connect()
 
-    def receive_data(self):
+    def retrieve_data(self):
         value = self.poll_node()
         data_chunk = GeneralDataChunk()
         if value is None:

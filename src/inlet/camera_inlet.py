@@ -36,5 +36,5 @@ class CameraInlet(Inlet):
         pass
 
     @abstractmethod
-    def receive_data(self):
+    def retrieve_data(self):
         pass

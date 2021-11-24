@@ -20,7 +20,7 @@ class StaticDataInlet(Inlet):
     def apply_configuration(self):
         pass
 
-    def receive_data(self):
+    def retrieve_data(self):
         data_chunk = GeneralDataChunk()
         data_chunk.add_data(DataChunkValue(self.variable_name, self.config.value))
         for metadata_variable, metadata_value in self.config.metadata.items():

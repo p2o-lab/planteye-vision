@@ -72,7 +72,7 @@ class GenericCameraInlet(CameraInlet):
             logging.warning('Capturing device could not be released')
             self.camera_status.initialised = True
 
-    def receive_data(self):
+    def retrieve_data(self):
         data_chunk = GeneralDataChunk()
 
         if not self.camera_status.initialised:

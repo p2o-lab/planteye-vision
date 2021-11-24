@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 
-class Inlet(ABC):
+class Shell(ABC):
     @abstractmethod
-    def import_configuration(self, inlet_configuration_provider):
+    def import_configuration(self, outlet_configuration_provider):
         pass
 
     @abstractmethod
@@ -11,5 +11,5 @@ class Inlet(ABC):
         pass
 
     @abstractmethod
-    def retrieve_data(self):
+    def attach_callback(self, callback):
         pass

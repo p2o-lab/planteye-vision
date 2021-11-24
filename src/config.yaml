@@ -50,11 +50,11 @@ inlet:
       unit: none
       interpretation: none
       description: a selected opcua variable
-outlet:
+shell:
   rest_api:
     type: rest_api
     access:
-      url: 0.0.0.0
+      host: 0.0.0.0
       port: 5000
       name: 'PlantEye-Vision'
       endpoint: '/get_frame'
