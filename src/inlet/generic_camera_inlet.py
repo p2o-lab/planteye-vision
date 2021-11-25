@@ -85,12 +85,14 @@ class GenericCameraInlet(CameraInlet):
             status = CapturingStatus(1)
             data_chunk.add_status(status)
             logging.warning(status.get_message())
+            self.camera_status.initialised = False
             return data_chunk
 
         if self.camera_status.capturing:
             status = CapturingStatus(2)
             data_chunk.add_status(status)
             logging.warning(status.get_message())
+            self.camera_status.initialised = False
             return data_chunk
 
         self.camera_status.capturing = True
@@ -113,6 +115,7 @@ class GenericCameraInlet(CameraInlet):
             status = CapturingStatus(99)
             data_chunk.add_status(status)
             logging.warning(status.get_message())
+            self.camera_status.initialised = False
             return data_chunk
 
     def get_camera_info(self):
