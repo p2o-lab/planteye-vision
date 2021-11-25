@@ -3,7 +3,7 @@ inlet:
   camera:
     type: local_camera_cv2 #baumer_camera_neoapi
     access:
-      device_id: 1
+      device_id: 0
     parameters:
       Width: 720
       ExposureTime: 720
