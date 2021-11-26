@@ -7,82 +7,98 @@ class Configuration(ABC):
         pass
 
 
-class CameraConfiguration(Configuration):
+class GeneralConfiguration(Configuration):
     def __init__(self):
         self.type = 'unspecified'
-        self.device_id = 0
         self.parameters = []
         self.metadata = {}
+        self.access_data = {}
+        self.cfg_dict = {}
 
     def read(self, cfg_provider):
-        cfg_dict = cfg_provider.provide_config()
-        self.type = cfg_dict['type']
-        self.device_id = cfg_dict['access']['device_id']
-        self.parameters = cfg_dict['parameters']
-        self.metadata = cfg_dict['metadata']
+        self.cfg_dict = cfg_provider.provide_config()
+        if 'type' in self.cfg_dict.keys():
+            self.type = self.cfg_dict['type']
+        if 'parameters' in self.cfg_dict.keys():
+            self.parameters = self.cfg_dict['parameters']
+        if 'metadata' in self.cfg_dict.keys():
+            self.metadata = self.cfg_dict['metadata']
 
 
-class StaticValueConfiguration:
+class CameraConfiguration(GeneralConfiguration):
     def __init__(self):
+        super().__init__()
+        self.access_data = {'device_id': 0}
+
+    def read(self, cfg_provider):
+        super().read(cfg_provider)
+        if 'access' in self.cfg_dict.keys():
+            if 'device_id' in self.cfg_dict['access']:
+                self.access_data['device_id'] = self.cfg_dict['access']['device_id']
+
+
+class StaticValueConfiguration(GeneralConfiguration):
+    def __init__(self):
+        super().__init__()
         self.value = None
+
+    def read(self, cfg_provider):
+        super().read(cfg_provider)
+        if 'value' in self.cfg_dict.keys():
+            self.value = self.cfg_dict['value']
+
+
+class OPCUAValueConfiguration(GeneralConfiguration):
+    def __init__(self):
+        super().__init__()
+        self.value = None
+        self.access_data = {'server': '0.0.0.0', 'username': '', 'password': '', 'node_ns': None, 'node_id': None}
+
+    def read(self, cfg_provider):
+        super().read(cfg_provider)
+        if 'access' in self.cfg_dict.keys():
+            if 'server' in self.cfg_dict['access']:
+                self.access_data['server'] = self.cfg_dict['access']['server']
+            if 'username' in self.cfg_dict['access']:
+                self.access_data['username'] = self.cfg_dict['access']['username']
+            if 'password' in self.cfg_dict['access']:
+                self.access_data['password'] = self.cfg_dict['access']['password']
+            if 'node_ns' in self.cfg_dict['access']:
+                self.access_data['node_ns'] = self.cfg_dict['access']['node_ns']
+            if 'node_id' in self.cfg_dict['access']:
+                self.access_data['node_id'] = self.cfg_dict['access']['node_id']
+
+
+class RestAPIConfiguration(GeneralConfiguration):
+    def __init__(self):
+        super().__init__()
+        self.value = None
+        self.access_data = {'host': '0.0.0.0', 'port': 5000, 'endpoint_name': 'RestAPI PlantEye/Vision', 'endpoint': '/get_frame'}
         self.metadata = {}
 
     def read(self, cfg_provider):
-        cfg_dict = cfg_provider.provide_config()
-        self.value = cfg_dict['value']
-        self.metadata = cfg_dict['metadata']
+        if 'access' in self.cfg_dict.keys():
+            if 'server' in self.cfg_dict['access']:
+                self.access_data['host'] = self.cfg_dict['access']['host']
+            if 'port' in self.cfg_dict['access']:
+                self.access_data['port'] = self.cfg_dict['access']['port']
+            if 'server_password' in self.cfg_dict['access']:
+                self.access_data['server_url'] = self.cfg_dict['access']['password']
+            if 'endpoint_name' in self.cfg_dict['access']:
+                self.access_data['endpoint_name'] = self.cfg_dict['access']['endpoint_name']
+            if 'endpoint' in self.cfg_dict['access']:
+                self.access_data['endpoint'] = self.cfg_dict['access']['endpoint']
 
 
-class OPCUAValueConfiguration:
+class LocalShellConfiguration(GeneralConfiguration):
     def __init__(self):
-        self.server_url = None
-        self.server_user = ''
-        self.server_password = ''
-        self.namespace = None
-        self.node_id = None
-        self.metadata = {}
-
-    def read(self, cfg_provider):
-        cfg_dict = cfg_provider.provide_config()
-        self.server_url = cfg_dict['access']['server']
-        self.server_user = cfg_dict['access']['username']
-        self.server_password = cfg_dict['access']['password']
-        self.namespace = cfg_dict['access']['node_ns']
-        self.node_id = cfg_dict['access']['node_id']
-        self.metadata = cfg_dict['metadata']
-
-
-class RestAPIConfiguration:
-    def __init__(self):
-        self.host = None
-        self.port = 5000
-        self.endpoint_name = 'Rest API'
-        self.endpoint = '/endpoint'
-        self.metadata = {}
-
-    def read(self, cfg_provider):
-        cfg_dict = cfg_provider.provide_config()
-        self.host = cfg_dict['access']['host']
-        self.port = cfg_dict['access']['port']
-        self.endpoint_name = cfg_dict['access']['name']
-        self.endpoint = cfg_dict['access']['endpoint']
-        if 'metadata' in cfg_dict.keys():
-            self.metadata = cfg_dict['metadata']
-        else:
-            self.metadata = {}
-
-
-class LocalShellConfiguration:
-    def __init__(self):
+        super().__init__()
         self.storage_path = '../data/'
         self.time_interval = 1000
-        self.metadata = {}
 
     def read(self, cfg_provider):
-        cfg_dict = cfg_provider.provide_config()
-        self.storage_path = cfg_dict['access']['storage_path']
-        self.time_interval = cfg_dict['access']['time_interval']
-        if 'metadata' in cfg_dict.keys():
-            self.metadata = cfg_dict['metadata']
-        else:
-            self.metadata = {}
+        if 'access' in self.cfg_dict.keys():
+            if 'storage_path' in self.cfg_dict['access']:
+                self.access_data['storage_path'] = self.cfg_dict['access']['storage_path']
+            if 'time_interval' in self.cfg_dict['access']:
+                self.access_data['time_interval'] = self.cfg_dict['access']['time_interval']

@@ -11,17 +11,19 @@ class StaticDataInlet(Inlet):
     """
     def __init__(self):
         self.config = StaticValueConfiguration()
+        self.type = None
         self.name = None
 
     def import_configuration(self, config_provider):
-        self.config.read(config_provider)
         self.name = config_provider.provide_name()
+        self.config.read(config_provider)
+        self.type = self.config.type
 
     def apply_configuration(self):
         pass
 
     def retrieve_data(self):
-        data_chunk = GeneralDataChunk(self.name)
+        data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
         data_chunk.add_data(DataChunkValue(self.name, self.config.value))
         for metadata_variable, metadata_value in self.config.metadata.items():
             data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))

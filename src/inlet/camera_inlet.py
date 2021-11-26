@@ -11,12 +11,14 @@ class CameraInlet(Inlet):
     def __init__(self):
         self.config = CameraConfiguration()
         self.name = None
+        self.type = None
         self.camera_object = None
         self.camera_status = CameraStatus()
 
     def import_configuration(self, config_provider):
         self.name = config_provider.provide_name()
         self.config.read(config_provider)
+        self.type = self.config.type
 
     def apply_configuration(self):
         configured_all_parameters = True

@@ -18,23 +18,25 @@ class OPCUADataInlet(Inlet):
     def __init__(self):
         self.config = OPCUAValueConfiguration()
         self.name = None
+        self.type = None
         self.opcua_client = None
         self.node_obj = None
 
     def import_configuration(self, config_provider):
-        self.config.read(config_provider)
         self.name = config_provider.provide_name()
+        self.config.read(config_provider)
+        self.type = self.config.type
 
     def apply_configuration(self):
-        opcua_server_url = self.config.server_url
-        opcua_server_username = self.config.server_user
-        opcua_server_pwd = self.config.server_password
+        opcua_server_url = self.config.access_data['server']
+        opcua_server_username = self.config.access_data['username']
+        opcua_server_pwd = self.config.access_data['password']
         self.opcua_client = OPCUAClient(opcua_server_url, opcua_server_username, opcua_server_pwd)
         self.opcua_client.connect()
 
     def retrieve_data(self):
         value = self.poll_node()
-        data_chunk = GeneralDataChunk(self.name)
+        data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
         if value is None:
             status = OPCUAReadStatus(99)
             data_chunk.add_status(status)
@@ -59,16 +61,16 @@ class OPCUADataInlet(Inlet):
                 'Cannot poll %s from OPCA UA server %s (no connection)' % (self.name, self.opcua_client.get_url()))
             return None
         try:
-            node_obj = ua.NodeId(self.config.node_id, self.config.namespace)
+            node_obj = ua.NodeId(self.config.access_data['node_id'], self.config.access_data['namespace'])
             node = self.opcua_client.get_server_obj().get_node(node_obj)
             data_variant = node.get_data_value()
             timestamp = data_variant.SourceTimestamp
             value = data_variant.Value.Value
             logging.info('Server %s, Node %s: Value polled (Timestamp %s, Value %s)' % (
-                self.opcua_client.get_url(), str(self.config.node_id), str(timestamp), str(value)))
+                self.opcua_client.get_url(), str(self.config.access_data['node_id']), str(timestamp), str(value)))
             return value
         except Exception as exc:
-            logging.info('Server %s, Node %s: Value polling failed' % (self.opcua_client.get_url(), str(self.config.node_id)),
+            logging.info('Server %s, Node %s: Value polling failed' % (self.opcua_client.get_url(), str(self.config.access_data['node_id'])),
                          exc_info=exc)
             return None
 
@@ -77,14 +79,14 @@ class OPCUADataInlet(Inlet):
 
 
 class OPCUAClient:
-    def __init__(self, opcua_url, user_id='', user_pwd='', reconnect_interval=1000):
-        self.opcua_url = opcua_url
-        self.user_id = user_id
-        self.user_pwd = user_pwd
+    def __init__(self, server, username='', password='', reconnect_interval=1000):
+        self.server = server
+        self.username = username
+        self.password = password
 
-        self.client = Client(self.opcua_url)
-        self.client.set_user(user_id)
-        self.client.set_password(user_pwd)
+        self.client = Client(self.server)
+        self.client.set_user(username)
+        self.client.set_password(password)
 
         self.connection_status = False
         self.connectivity_thread = None
@@ -101,22 +103,22 @@ class OPCUAClient:
         sleep(1)
 
     def disconnect(self):
-        logging.info('Disconnecting to OPC UA server %s ...' % self.opcua_url)
+        logging.info('Disconnecting to OPC UA server %s ...' % self.server)
         self.stop_flag = True
         self.client.disconnect()
         while not self.stopped:
             sleep(0.1)
-            logging.info('Disconnected from OPC UA server %s' % self.opcua_url)
+            logging.info('Disconnected from OPC UA server %s' % self.server)
 
     def __single_connect(self):
-        logging.info('Connecting to OPC UA server %s ...' % self.opcua_url)
+        logging.info('Connecting to OPC UA server %s ...' % self.server)
         try:
             self.client.connect()
-            logging.info('Connection to OPC UA server %s established' % self.opcua_url)
+            logging.info('Connection to OPC UA server %s established' % self.server)
             sleep(1)
             self.connected_once = True
         except Exception as exc:
-            logging.warning('Connection to OPC UA server %s failed' % self.opcua_url, exc_info=exc)
+            logging.warning('Connection to OPC UA server %s failed' % self.server, exc_info=exc)
 
     def __connectivity_routine(self):
         while True:
@@ -129,13 +131,13 @@ class OPCUAClient:
             sleep(self.reconnect_interval / 1000)
 
     def check_connection(self):
-        logging.debug('Checking connection status to OPCA UA server %s ...' % self.opcua_url)
+        logging.debug('Checking connection status to OPCA UA server %s ...' % self.server)
         try:
             self.client.get_node(ua.NodeId(2259, 0)).get_data_value()
-            logging.debug('Connection to OPCA UA server %s persists' % self.opcua_url)
+            logging.debug('Connection to OPCA UA server %s persists' % self.server)
             self.connection_status = True
         except Exception as exc:
-            logging.warning('Connection to OPCA UA server %s does NOT persist' % self.opcua_url)
+            logging.warning('Connection to OPCA UA server %s does NOT persist' % self.server)
             self.connection_status = False
             sleep(1)
 
@@ -143,7 +145,7 @@ class OPCUAClient:
         return self.connection_status
 
     def get_url(self):
-        return self.opcua_url
+        return self.server
 
     def get_server_obj(self):
         return self.client

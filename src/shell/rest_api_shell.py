@@ -24,12 +24,12 @@ class RestAPIShell(Shell):
 
     def apply_configuration(self):
         name = self.webserver_name
-        host = self.config.host
-        port = self.config.port
+        host = self.config.access_data['host']
+        port = self.config.access_data['port']
         self.webserver = RestAPIWebserver(name, host, port)
 
-        endpoint = self.config.endpoint
-        endpoint_name = self.config.endpoint_name
+        endpoint = self.config.access_data['endpoint']
+        endpoint_name = self.config.access_data['endpoint_name']
         self.webserver.add_url_rule(endpoint, endpoint_name, self.response_callback)
         self.webserver.add_url_rule('/', 'homepage', self.homepage_callback)
         self.connect()

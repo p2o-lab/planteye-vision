@@ -48,7 +48,7 @@ class GenericCameraInlet(CameraInlet):
     def connect(self):
         while True:
             try:
-                self.camera_object = cv2.VideoCapture(self.config.device_id)
+                self.camera_object = cv2.VideoCapture(self.config.access_data['device_id'])
             except Exception as exc:
                 logging.error('Capturing device not connected... trying again', exc_info=exc)
             if self.camera_object.isOpened():
@@ -73,7 +73,7 @@ class GenericCameraInlet(CameraInlet):
             self.camera_status.initialised = True
 
     def retrieve_data(self):
-        data_chunk = GeneralDataChunk(self.name)
+        data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
 
         if not self.camera_status.initialised:
             self.connect()

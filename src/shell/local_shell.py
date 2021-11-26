@@ -11,7 +11,7 @@ from src.configuration.configuration import LocalShellConfiguration
 from src.data_chunks.data_chunk_data import DataChunkImage
 
 
-class PeriodicShell(Shell):
+class LocalShell(Shell):
     """
     This class describes a periodic shell
     """

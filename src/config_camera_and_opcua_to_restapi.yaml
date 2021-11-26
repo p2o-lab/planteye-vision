@@ -1,0 +1,66 @@
+---
+inlet:
+  camera:
+    type: local_camera_cv2 #baumer_camera_neoapi
+    access:
+      device_id: 0
+    parameters:
+      Width: 720
+      ExposureTime: 720
+    metadata:
+      '010F': Raspberry Pi # Manufacturer of recording equipment
+      '0110': HQ Camera v1.1 # The model name or model number of the equipment
+      'A432': 6mm f/1.2 # Lens specification.
+      'A433': RPIZ # Lens manufacturer.
+      'A434': PT361060M3MP12 # Lens model.
+      '013B': P2O-Lab # This tag records the name of the camera owner, photographer or image creator.
+      '0131': PlantEye/Vision, 1.0.0 # This tag records the name and version of the software.
+      '9208': Vessel light, 2.5 W # The kind of light source.
+      '9206': undefined # The distance to the subject, given in meters.
+      '0140': undefined  # A color map for palette color images.
+      '0112': 1 # The image orientation
+      '829D': 1.2 # The F number.
+      '8827': 100 # This tag indicates the ISO speed value of a camera or input device that is defined in ISO 12232.
+      '9201': 1/8000 # Shutter speed.
+      '9202': 1.2 # The lens aperture.
+      '920A': 6 # The actual focal length of the lens, in mm.
+  light_conditions:
+    type: static_variable
+    value: natural
+    metadata:
+      unit: none
+      interpretation: no artificial light switched on
+      description: light conditions during experiment
+  flow_regime:
+    type: static_variable
+    value: 0
+    metadata:
+      unit: none
+      interpretation: flooded
+      description: flow regime in reactor
+  stirrer_rotational_speed:
+    type: opcua_variable
+    access:
+      server: 'opc.tcp://opcuademo.sterfive.com:26543'
+      username:
+      password:
+      node_ns: 8
+      node_id: Scalar_Simulation_Float
+    metadata:
+      unit: none
+      interpretation: none
+      description: a selected opcua variable
+#shell:
+#  local:
+#    type: local
+#    access:
+#      storage_path: ../data
+#      time_interval: 1000
+shell:
+  rest_api:
+    type: rest_api
+    access:
+      host: 0.0.0.0
+      port: 5000
+      name: 'PlantEye-Vision'
+      endpoint: '/get_frame'

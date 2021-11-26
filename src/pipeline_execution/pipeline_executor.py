@@ -2,15 +2,16 @@ from src.inlet.generic_camera_inlet import GenericCameraInlet
 from src.inlet.static_data_inlet import StaticDataInlet
 from src.inlet.opcua_data_inlet import OPCUADataInlet
 from src.shell.rest_api_shell import RestAPIShell
-from src.shell.periodic_shell import PeriodicShell
+from src.shell.local_shell import LocalShell
 from src.processors.data_processor import EncodeImageChunksToBase64, ChunksToDict
+from src.configuration.config_provider import ConfigProvider
 
 from src.configuration.config_provider import DictConfigProvider
 import json
 
 
 class PipeLineExecutor:
-    def __init__(self, config_provider):
+    def __init__(self, config_provider: ConfigProvider):
         self.config_provider = config_provider
         self.config_dict = None
         self.shell = None
@@ -51,7 +52,7 @@ class PipeLineExecutor:
             if shell_config_dict['type'] == 'rest_api':
                 self.shell = RestAPIShell()
             elif shell_config_dict['type'] == 'local':
-                self.shell = PeriodicShell()
+                self.shell = LocalShell()
             shell_config_provider = DictConfigProvider(shell_name, shell_config_dict)
             self.shell.import_configuration(shell_config_provider)
             self.shell.attach_callback(self.single_execution)
@@ -67,7 +68,7 @@ class PipeLineExecutor:
             EncodeImageChunksToBase64().apply_processor(data_chunks)
             data_chunks_dict = ChunksToDict().apply_processor(data_chunks)
             return json.dumps(data_chunks_dict)
-        elif isinstance(self.shell, PeriodicShell):
+        elif isinstance(self.shell, LocalShell):
             return data_chunks
 
     def add_transformer(self, transformer):
