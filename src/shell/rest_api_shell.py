@@ -38,7 +38,7 @@ class RestAPIShell(Shell):
         self.response_callback = callback
 
     def homepage_callback(self):
-        welcome_str = 'Welcome to PlantEye API. Available endpoint is %s' % self.config.endpoint
+        welcome_str = 'Welcome to PlantEye API. Available endpoint is %s' % self.config.access_data['endpoint']
         return welcome_str
 
     def connect(self):
