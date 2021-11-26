@@ -10,8 +10,6 @@ To run the script be sure that config-file (config.yaml) is proper and then run 
 python3 vision.py
 ```
 
-
-
 ### Inlet type
 inlet_type defines the type of the data inlet.
 
@@ -102,6 +100,7 @@ shell:
       endpoint: '/get_frame'
 ```
 Further metadata, tags and labels can be added.
+Some example configurations can be found in ../res/
 
 ### Supported data inlet types
 
