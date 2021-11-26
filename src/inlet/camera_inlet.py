@@ -2,6 +2,7 @@ from abc import abstractmethod
 from src.inlet.inlet import Inlet
 from src.common.camera_status import CameraStatus
 from src.configuration.configuration import CameraConfiguration
+from src.configuration.config_provider import ConfigProvider
 
 
 class CameraInlet(Inlet):
@@ -15,7 +16,7 @@ class CameraInlet(Inlet):
         self.camera_object = None
         self.camera_status = CameraStatus()
 
-    def import_configuration(self, config_provider):
+    def import_configuration(self, config_provider: ConfigProvider):
         self.name = config_provider.provide_name()
         self.config.read(config_provider)
         self.type = self.config.type
@@ -28,7 +29,7 @@ class CameraInlet(Inlet):
         self.camera_status.configured = True
 
     @abstractmethod
-    def set_parameter(self, parameter, value):
+    def set_parameter(self, parameter: str, value: [int, float, str, bool]):
         pass
 
     @abstractmethod
@@ -41,4 +42,8 @@ class CameraInlet(Inlet):
 
     @abstractmethod
     def retrieve_data(self):
+        pass
+
+    @abstractmethod
+    def get_camera_info(self):
         pass

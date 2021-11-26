@@ -3,6 +3,7 @@ from src.configuration.configuration import StaticValueConfiguration
 from src.data_chunks.data_chunk import GeneralDataChunk
 from src.data_chunks.data_chunk_data import DataChunkValue
 from src.data_chunks.metadata_chunk import MetadataChunkData
+from src.configuration.config_provider import ConfigProvider
 
 
 class StaticDataInlet(Inlet):
@@ -11,10 +12,10 @@ class StaticDataInlet(Inlet):
     """
     def __init__(self):
         self.config = StaticValueConfiguration()
-        self.type = None
         self.name = None
+        self.type = None
 
-    def import_configuration(self, config_provider):
+    def import_configuration(self, config_provider: ConfigProvider):
         self.name = config_provider.provide_name()
         self.config.read(config_provider)
         self.type = self.config.type

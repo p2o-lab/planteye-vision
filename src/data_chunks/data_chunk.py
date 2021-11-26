@@ -23,13 +23,13 @@ class DataChunk(ABC):
 
 
 class GeneralDataChunk(DataChunk):
-    def __init__(self, name, type, access_data):
+    def __init__(self, name: str, type: str, access_data: dict):
         self.name = name
         self.type = type
+        self.access_data = access_data
         self.data = []
         self.metadata = []
         self.status = []
-        self.access_data = access_data
 
     def add_data(self, data_chunk: DataChunkData):
         self.data.append(data_chunk)

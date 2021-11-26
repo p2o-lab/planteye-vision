@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+from src.configuration.config_provider import ConfigProvider
 
 
 class Configuration(ABC):
     @abstractmethod
-    def read(self, cfg_provider):
+    def read(self, cfg_provider: ConfigProvider):
         pass
 
 
@@ -15,7 +16,7 @@ class GeneralConfiguration(Configuration):
         self.access_data = {}
         self.cfg_dict = {}
 
-    def read(self, cfg_provider):
+    def read(self, cfg_provider: ConfigProvider):
         self.cfg_dict = cfg_provider.provide_config()
         if 'type' in self.cfg_dict.keys():
             self.type = self.cfg_dict['type']
@@ -30,7 +31,7 @@ class CameraConfiguration(GeneralConfiguration):
         super().__init__()
         self.access_data = {'device_id': 0}
 
-    def read(self, cfg_provider):
+    def read(self, cfg_provider: ConfigProvider):
         super().read(cfg_provider)
         if 'access' in self.cfg_dict.keys():
             if 'device_id' in self.cfg_dict['access']:
@@ -42,7 +43,7 @@ class StaticValueConfiguration(GeneralConfiguration):
         super().__init__()
         self.value = None
 
-    def read(self, cfg_provider):
+    def read(self, cfg_provider: ConfigProvider):
         super().read(cfg_provider)
         if 'value' in self.cfg_dict.keys():
             self.value = self.cfg_dict['value']
@@ -51,10 +52,10 @@ class StaticValueConfiguration(GeneralConfiguration):
 class OPCUAValueConfiguration(GeneralConfiguration):
     def __init__(self):
         super().__init__()
-        self.value = None
+        #self.value = None
         self.access_data = {'server': '0.0.0.0', 'username': '', 'password': '', 'node_ns': None, 'node_id': None}
 
-    def read(self, cfg_provider):
+    def read(self, cfg_provider: ConfigProvider):
         super().read(cfg_provider)
         if 'access' in self.cfg_dict.keys():
             if 'server' in self.cfg_dict['access']:
@@ -69,14 +70,13 @@ class OPCUAValueConfiguration(GeneralConfiguration):
                 self.access_data['node_id'] = self.cfg_dict['access']['node_id']
 
 
-class RestAPIConfiguration(GeneralConfiguration):
+class RestAPIShellConfiguration(GeneralConfiguration):
     def __init__(self):
         super().__init__()
-        self.value = None
+        #self.value = None
         self.access_data = {'host': '0.0.0.0', 'port': 5000, 'endpoint_name': 'RestAPI PlantEye/Vision', 'endpoint': '/get_frame'}
-        self.metadata = {}
 
-    def read(self, cfg_provider):
+    def read(self, cfg_provider: ConfigProvider):
         if 'access' in self.cfg_dict.keys():
             if 'server' in self.cfg_dict['access']:
                 self.access_data['host'] = self.cfg_dict['access']['host']
@@ -96,7 +96,7 @@ class LocalShellConfiguration(GeneralConfiguration):
         self.storage_path = '../data/'
         self.time_interval = 1000
 
-    def read(self, cfg_provider):
+    def read(self, cfg_provider: ConfigProvider):
         if 'access' in self.cfg_dict.keys():
             if 'storage_path' in self.cfg_dict['access']:
                 self.access_data['storage_path'] = self.cfg_dict['access']['storage_path']

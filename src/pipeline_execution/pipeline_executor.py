@@ -16,8 +16,7 @@ class PipeLineExecutor:
         self.config_dict = None
         self.shell = None
         self.inlets = []
-        self.transformers = []
-        self.outlets = []
+        self.processors = []
 
     def read_configuration(self):
         self.config_dict = self.config_provider.provide_config()
@@ -62,8 +61,8 @@ class PipeLineExecutor:
         data_chunks = []
         for inlet in self.inlets:
             data_chunks.append(inlet.retrieve_data())
-        for transformer in self.transformers:
-            transformer.apply_processor(data_chunks)
+        for processor in self.processors:
+            processor.apply_processor(data_chunks)
         if isinstance(self.shell, RestAPIShell):
             EncodeImageChunksToBase64().apply_processor(data_chunks)
             data_chunks_dict = ChunksToDict().apply_processor(data_chunks)
@@ -72,7 +71,7 @@ class PipeLineExecutor:
             return data_chunks
 
     def add_transformer(self, transformer):
-        self.transformers.append(transformer)
+        self.processors.append(transformer)
 
     def run(self):
         self.read_configuration()

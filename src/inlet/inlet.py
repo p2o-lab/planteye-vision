@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+from src.configuration.config_provider import ConfigProvider
 
 
 class Inlet(ABC):
     @abstractmethod
-    def import_configuration(self, inlet_configuration_provider):
+    def import_configuration(self, config_provider: ConfigProvider):
         pass
 
     @abstractmethod

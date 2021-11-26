@@ -9,6 +9,7 @@ from src.data_chunks.data_chunk import GeneralDataChunk
 from src.data_chunks.data_chunk_data import DataChunkValue
 from src.data_chunks.metadata_chunk import MetadataChunkData
 from src.data_chunks.data_chunk_status import OPCUAReadStatus
+from src.configuration.config_provider import ConfigProvider
 
 
 class OPCUADataInlet(Inlet):
@@ -20,9 +21,8 @@ class OPCUADataInlet(Inlet):
         self.name = None
         self.type = None
         self.opcua_client = None
-        self.node_obj = None
 
-    def import_configuration(self, config_provider):
+    def import_configuration(self, config_provider: ConfigProvider):
         self.name = config_provider.provide_name()
         self.config.read(config_provider)
         self.type = self.config.type
@@ -49,12 +49,6 @@ class OPCUADataInlet(Inlet):
             data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))
         return data_chunk
 
-    def connect(self):
-        pass
-
-    def disconnect(self):
-        pass
-
     def poll_node(self):
         if not self.opcua_client.get_connection_status():
             logging.warning(
@@ -79,7 +73,7 @@ class OPCUADataInlet(Inlet):
 
 
 class OPCUAClient:
-    def __init__(self, server, username='', password='', reconnect_interval=1000):
+    def __init__(self, server: str, username='', password='', reconnect_interval=1000):
         self.server = server
         self.username = username
         self.password = password

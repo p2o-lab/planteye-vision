@@ -1,0 +1,299 @@
+@startuml
+
+class PipelineExecutor {
++config_provider: ConfigProvider
++config_dict: dict
++shell: Shell
++inlets: list
++processors: list
++read_configuration(): void
++apply_configuration(): void
++configure_inlets(): void
++configure_shell(): void
++single_execution(): list
++add_transformer(): void
++run():run
+}
+
+interface Shell{
++import_configuration(config_provider: ConfigProvider)
++apply_configuration(): void
++attach_callback(callback: callable): void
+}
+
+
+class LocalShell{
++config: Configuration
++name: str
++time_scheduler: TimeScheduler
++callback: callable
++execution_step(): void
+}
+
+class TimeScheduler{
++time_interval: float
++executed_function: callable
++thread: threading.Thread()
++stop_flag: bool
+}
+
+
+class RestAPIShell{
++config: Configuration
++webserver_name: str
++webserver: RestAPIWebserver
++webserver_thread: threading.Thread()
++response_callback: callable
++homepage_callback(callback: callable): void
++connect(): void
++disconnect(): void
+}
+
+class RestAPIWebserver{
++name: str
++host: str
++port: int
++endpoint_flask_app:flask.Flask(name:str)
++add_url_rule(endpoint: str, name: str, rule: callable)
++stop_flag: bool
+}
+
+interface Inlet{
++import_configuration(config_provider: ConfigProvider)
++apply_configuration(): void
++retrieve_data(): void
+}
+
+abstract class CameraInlet{
++config:CameraConfiguration
++name: str
++type: str
++camera_object: object
++camera_status: CameraStatus
++set_parameter(parameter: str, value: int, float, str, bool): void
++connect(): void
++disconnect(): void
+}
+
+abstract class GenericCameraInlet{
++config:CameraConfiguration
++name: str
++type: str
++camera_object: object
++camera_status: CameraStatus
++set_parameter(parameter: str, value: int, float, str, bool): void
++connect(): void
++disconnect(): void
++get_camera_info(): void
+}
+
+abstract class NeoApiCameraInlet{
++config:CameraConfiguration
++name: str
++type: str
++camera_object: object
++camera_status: CameraStatus
++set_parameter(parameter: str, value: int, float, str, bool): void
++connect(): void
++disconnect(): void
++get_camera_info(): void
+}
+
+class StaticDataInlet{
++config:StaticValueConfiguration
++name: str
++type: str
+}
+
+class OPCUADataInlet{
++config:OPCUAValueConfiguration
++name: str
++type: str
++opcua_client: OPCUAClient
++poll_node() : void
++get_opcua_server_info(): void
+}
+
+class OPCUAClient{
+server: str
+username: str
+password: str
+client: opcua.Client
+connection_status: bool
+connectivity_thread: threading.Thread
+reconnect_interval: float
+connect_once: bool
+stop_flag: bool
+stopped: bool
++connect(): void
++disconnect(): void
+-__single_connect(): void
+-__connectivity_routine(): void
++check_connection(): void
++get_connection_status(): bool
++get_url(): str
++get_server_obj(): opcua.Client
+}
+
+interface Configuration{
++read(cfg_provider: ConfigProvider): void
+}
+
+class GeneralConfiguration{
++type: str
++parameters: list
++metadata: dict
++access_data: dict
++cfg_dict: dict
+}
+
+class CameraConfiguration{
++type: str
++parameters: list
++metadata: dict
++access_data: dict
++cfg_dict: dict
+}
+
+class StaticValueConfiguration{
++value: str, int, float, bool
+}
+
+class OPCUAValueConfiguration{
++value: str, int, float, bool
+}
+
+class RestAPIShellConfiguration{
+}
+
+class LocalShellConfiguration{
++storage_path: str
++time_interval: float
+}
+
+class CameraStatus{
++initialised: bool
++configured: bool
++fully_configured: bool
++connected: bool
++capturing: bool
++as_dict(): dict
+}
+
+interface DataChunk{
++add_data(data: DataChunkData): void
++add_metadata(metadata: MetadataChunk): void
++add_status(status: DataChunkStatus): void
++as_dict(): dict
+}
+
+class GeneralDataChunk{
++name: str
++type: str
++access_data: dict
++data: list
++metadata: list
++status: list
+}
+
+
+interface DataChunkData{
++as_dict(): dict
+}
+
+class DataChunkValue{
++name: str
++value: str, int, float, bool
+}
+
+class DataChunkImage{
++name: str
++value: np.ndarray, str
++encode_as_base64(): void
++base64_decoder(frame:str): np.ndarray
+}
+
+
+interface DataChunkStatus{
++as_dict(): dict
+}
+
+class CapturingStatus{
++operation: str
++code: int
++message: str
++infer_message(): void
++as_dict(): dict
++get_message(): str
+}
+
+class OPCUAReadStatus{
++operation: str
++code: int
++message: str
++infer_message(): void
++as_dict(): dict
++get_message(): str
+}
+
+interface MetadataChunk{
++as_dict: dict
+}
+
+class MetadataChunkData{
++name: str
++value: str, int, float, bool
+}
+
+
+PipelineExecutor "1"*--"1" Shell
+PipelineExecutor "1"*--"*" Inlet
+
+Shell <|-- LocalShell
+LocalShell "1"*--"1" TimeScheduler: contains
+Shell <|-- RestAPIShell
+RestAPIShell "1"*--"1" RestAPIWebserver: contains
+
+Inlet <|-- CameraInlet
+CameraInlet <|-- GenericCameraInlet
+CameraInlet <|-- NeoApiCameraInlet
+
+Inlet <|-- StaticDataInlet
+Inlet <|-- OPCUADataInlet
+OPCUADataInlet "1"*--"1" OPCUAClient: contains
+
+Configuration <|-- GeneralConfiguration
+GeneralConfiguration <|-- CameraConfiguration
+GeneralConfiguration <|-- StaticValueConfiguration
+GeneralConfiguration <|-- OPCUAValueConfiguration
+GeneralConfiguration <|-- RestAPIShellConfiguration
+GeneralConfiguration <|-- LocalShellConfiguration
+
+LocalShell  "1"*--"1" Configuration: contains
+RestAPIShell  "1"*--"1" Configuration: contains
+CameraInlet  "1"*--"1" CameraConfiguration: contains
+OPCUADataInlet  "1"*--"1" OPCUAValueConfiguration: contains
+StaticDataInlet  "1"*--"1" StaticValueConfiguration: contains
+
+CameraInlet  "1"*--"1" CameraStatus: contains
+
+DataChunk <|-- GeneralDataChunk
+
+DataChunkData <|-- DataChunkValue
+DataChunkData <|-- DataChunkImage
+
+DataChunkStatus <|-- CapturingStatus
+DataChunkStatus <|-- OPCUAReadStatus
+
+MetadataChunk <|-- MetadataChunkData
+
+DataChunk  "1"*--"*" DataChunkData: contains
+DataChunk  "1"*--"*" DataChunkStatus: contains
+DataChunk  "1"*--"*" MetadataChunk: contains
+
+GenericCameraInlet  "1"*--"*" DataChunk: uses
+NeoApiCameraInlet  "1"*--"*" DataChunk: uses
+StaticDataInlet  "1"*--"*" DataChunk: uses
+OPCUADataInlet  "1"*--"*" DataChunk: uses
+
+@enduml

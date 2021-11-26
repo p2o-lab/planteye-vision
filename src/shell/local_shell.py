@@ -9,6 +9,7 @@ from src.common.timestamp import get_timestamp
 from src.shell.shell import Shell
 from src.configuration.configuration import LocalShellConfiguration
 from src.data_chunks.data_chunk_data import DataChunkImage
+from src.configuration.config_provider import ConfigProvider
 
 
 class LocalShell(Shell):
@@ -21,7 +22,7 @@ class LocalShell(Shell):
         self.time_scheduler = None
         self.callback = None
 
-    def import_configuration(self, config_provider):
+    def import_configuration(self, config_provider: ConfigProvider):
         self.config.read(config_provider)
         self.name = config_provider.provide_name()
 
