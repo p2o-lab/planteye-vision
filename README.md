@@ -10,25 +10,6 @@ To run the script be sure that config-file (config.yaml) is proper and then run 
 python3 vision.py
 ```
 
-### Inlet type
-inlet_type defines the type of the data inlet.
-
-### Inlet name
-inlet_name denotes a unique name of the data inlet. It shadows the name of the corresponding key it belongs to.
-
-### Inlet access data
-inlet_access_data contains the data used to connect to the data inlet.
-
-### Data
-data includes data values. The value or values are collected depending on the specified type of the data inlet.
-
-### Metadata
-metadata is a structure, which contains metadata to collected value/values, e.g. unit, measurement range or resolution of the captured image.
-
-### Status
-status has information on data collection and processing steps.
-
-
 ## Configure
 Create a config file according to the following structure:
 ```yaml
@@ -214,6 +195,24 @@ Response example:
 ```
 The response consists of a list of so-called data chunks (e.g. "camera", "light_conditions" and "flow_regimes").
 Data chunks have the same inner structure consisting of inlet_type, inlet_name, inlet_access_data, data, metadata and status.
+
+### Inlet type
+inlet_type defines the type of the data inlet.
+
+### Inlet name
+inlet_name denotes a unique name of the data inlet. It shadows the name of the corresponding key it belongs to.
+
+### Inlet access data
+inlet_access_data contains the data used to connect to the data inlet.
+
+### Data
+data includes data values. The value or values are collected depending on the specified type of the data inlet.
+
+### Metadata
+metadata is a structure, which contains metadata to collected value/values, e.g. unit, measurement range or resolution of the captured image.
+
+### Status
+status has information on data collection and processing steps.
 
 ## Requirements
 To install requirements use the following command:
