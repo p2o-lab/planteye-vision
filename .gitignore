@@ -2,7 +2,7 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-src/config_camera_to_disk.yaml
+res/config_camera_to_disk.yaml
 /data
 /.idea
 /supportings
