@@ -1,6 +1,6 @@
 @startuml
 
-!include https://raw.githubusercontent.com/ptrkcsk/one-dark-plantuml-theme/v1.0.0/theme.puml
+!include dark_theme.puml
 
 interface Vision{
 +run(): void
