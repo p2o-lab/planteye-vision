@@ -1,5 +1,5 @@
 from src.inlet.inlet import Inlet
-from src.configuration.configuration import StaticValueConfiguration
+from src.configuration.inlet_configuration import StaticValueConfiguration
 from src.data_chunks.data_chunk import GeneralDataChunk
 from src.data_chunks.data_chunk_data import DataChunkValue
 from src.data_chunks.metadata_chunk import MetadataChunkData

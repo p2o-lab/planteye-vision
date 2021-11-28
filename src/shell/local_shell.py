@@ -7,7 +7,7 @@ import cv2
 from src.common.timestamp import get_timestamp
 
 from src.shell.shell import Shell
-from src.configuration.configuration import LocalShellConfiguration
+from src.configuration.shell_configuration import LocalShellConfiguration
 from src.data_chunks.data_chunk_data import DataChunkImage
 from src.configuration.config_provider import ConfigProvider
 

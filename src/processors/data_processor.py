@@ -11,7 +11,7 @@ class DataProcessor (ABC):
 
 
 class EncodeImageChunksToBase64(DataProcessor):
-    def apply_processor(self, chunks):
+    def apply_processor(self, chunks: list):
         logging.debug('Images to base64 string...')
         for chunk in chunks:
             for chunk_pieces in chunk.data:
@@ -20,7 +20,7 @@ class EncodeImageChunksToBase64(DataProcessor):
 
 
 class ChunksToDict(DataProcessor):
-    def apply_processor(self, chunks):
+    def apply_processor(self, chunks: list):
         logging.debug('Chunks to json body...')
         response_body = {}
         for chunk in chunks:

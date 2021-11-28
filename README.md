@@ -7,7 +7,7 @@ Afterwards, the aggregated data are provided via a defined interface (shell). It
 ## Usage
 To run the script be sure that config-file (config.yaml) is proper and then run the script:
 ```bash
-python3 vision.py
+python main.py
 ```
 
 ## Configure

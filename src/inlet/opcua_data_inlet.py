@@ -4,7 +4,7 @@ from opcua import Client, ua
 import threading
 
 from src.inlet.inlet import Inlet
-from src.configuration.configuration import OPCUAValueConfiguration
+from src.configuration.inlet_configuration import OPCUAValueConfiguration
 from src.data_chunks.data_chunk import GeneralDataChunk
 from src.data_chunks.data_chunk_data import DataChunkValue
 from src.data_chunks.metadata_chunk import MetadataChunkData

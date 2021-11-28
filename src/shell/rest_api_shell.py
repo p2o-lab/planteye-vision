@@ -3,7 +3,7 @@ import logging
 import threading
 
 from src.shell.shell import Shell
-from src.configuration.configuration import RestAPIShellConfiguration
+from src.configuration.shell_configuration import RestAPIShellConfiguration
 from src.configuration.config_provider import ConfigProvider
 
 

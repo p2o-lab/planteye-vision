@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from src.inlet.inlet import Inlet
 from src.common.camera_status import CameraStatus
-from src.configuration.configuration import CameraConfiguration
+from src.configuration.inlet_configuration import CameraConfiguration
 from src.configuration.config_provider import ConfigProvider
 
 

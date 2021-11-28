@@ -1,5 +1,23 @@
 @startuml
 
+!include https://raw.githubusercontent.com/ptrkcsk/one-dark-plantuml-theme/v1.0.0/theme.puml
+
+interface Vision{
++run(): void
+}
+
+class VisionLocalConfiguration{
++path_to_config_file: str
++cfg_provider: FileConfigProvider
++pipeline_exec: PipelineExecutor
+}
+
+class VisionOnlineConfiguration{
++cfg_provider: FileConfigProvider
++pipeline_exec: PipelineExecutor
+}
+note top: not implemented yet
+
 class PipelineExecutor {
 +config_provider: ConfigProvider
 +config_dict: dict
@@ -75,7 +93,7 @@ abstract class CameraInlet{
 +disconnect(): void
 }
 
-abstract class GenericCameraInlet{
+class GenericCameraInlet{
 +config:CameraConfiguration
 +name: str
 +type: str
@@ -87,7 +105,7 @@ abstract class GenericCameraInlet{
 +get_camera_info(): void
 }
 
-abstract class NeoApiCameraInlet{
+class NeoApiCameraInlet{
 +config:CameraConfiguration
 +name: str
 +type: str
@@ -135,11 +153,55 @@ stopped: bool
 +get_server_obj(): opcua.Client
 }
 
+class RestAPIInlet
+{
++config:OPCUAValueConfiguration
++name: str
++type: str
++get_rest_api_info(): void
+}
+note top: not implemented yet
+
+interface ConfigProvider{
++provide_config(): void
++provide_name(): void
+}
+
+class FileConfigProvider{
++cfg_name: str
++cfg_file: str
++provide_config(): dict
++provide_name(): str
+}
+
+class DictConfigProvider{
++cfg_name: str
++cfg_dict: dict
++provide_config(): dict
++provide_name(): str
+}
+
 interface Configuration{
 +read(cfg_provider: ConfigProvider): void
 }
 
-class GeneralConfiguration{
+abstract class GeneralConfiguration{
++type: str
++parameters: list
++metadata: dict
++access_data: dict
++cfg_dict: dict
+}
+
+class InletConfiguration{
++type: str
++parameters: list
++metadata: dict
++access_data: dict
++cfg_dict: dict
+}
+
+class ShellConfiguration{
 +type: str
 +parameters: list
 +metadata: dict
@@ -160,8 +222,11 @@ class StaticValueConfiguration{
 }
 
 class OPCUAValueConfiguration{
-+value: str, int, float, bool
 }
+
+class RestAPIConfiguration{
+}
+note top: not implemented yet
 
 class RestAPIShellConfiguration{
 }
@@ -197,7 +262,7 @@ class GeneralDataChunk{
 }
 
 
-interface DataChunkData{
+abstract class DataChunkData{
 +as_dict(): dict
 }
 
@@ -214,7 +279,7 @@ class DataChunkImage{
 }
 
 
-interface DataChunkStatus{
+abstract class DataChunkStatus{
 +as_dict(): dict
 }
 
@@ -236,7 +301,7 @@ class OPCUAReadStatus{
 +get_message(): str
 }
 
-interface MetadataChunk{
+abstract class MetadataChunk{
 +as_dict: dict
 }
 
@@ -245,39 +310,68 @@ class MetadataChunkData{
 +value: str, int, float, bool
 }
 
+interface DataProcessor{
++apply_processor(input_data): void
+}
 
-PipelineExecutor "1"*--"1" Shell
-PipelineExecutor "1"*--"*" Inlet
+class EncodeImageChunksToBase64{
++apply_processor(chunks: list): void
+}
+
+class ChunksToDict{
++apply_processor(chunks: list): dict
+}
+
+Vision <|-- VisionLocalConfiguration
+Vision <|-- VisionOnlineConfiguration
+VisionLocalConfiguration ..> PipelineExecutor
+VisionOnlineConfiguration ..> PipelineExecutor
+
+PipelineExecutor "1"*--"1" Shell: contains
+PipelineExecutor "1"*--"1..*" Inlet: contains
+PipelineExecutor "1"*--"0..*" DataProcessor: contains
+PipelineExecutor "1"*--"1" ConfigProvider: contains
 
 Shell <|-- LocalShell
-LocalShell "1"*--"1" TimeScheduler: contains
+LocalShell --|> TimeScheduler: uses
 Shell <|-- RestAPIShell
-RestAPIShell "1"*--"1" RestAPIWebserver: contains
+RestAPIShell --|> RestAPIWebserver: uses
 
-Inlet <|-- CameraInlet
+Inlet <|.. CameraInlet
 CameraInlet <|-- GenericCameraInlet
 CameraInlet <|-- NeoApiCameraInlet
 
 Inlet <|-- StaticDataInlet
 Inlet <|-- OPCUADataInlet
-OPCUADataInlet "1"*--"1" OPCUAClient: contains
+OPCUADataInlet --|> OPCUAClient: uses
 
-Configuration <|-- GeneralConfiguration
-GeneralConfiguration <|-- CameraConfiguration
-GeneralConfiguration <|-- StaticValueConfiguration
-GeneralConfiguration <|-- OPCUAValueConfiguration
-GeneralConfiguration <|-- RestAPIShellConfiguration
-GeneralConfiguration <|-- LocalShellConfiguration
+Inlet <|-- RestAPIInlet
 
-LocalShell  "1"*--"1" Configuration: contains
-RestAPIShell  "1"*--"1" Configuration: contains
-CameraInlet  "1"*--"1" CameraConfiguration: contains
-OPCUADataInlet  "1"*--"1" OPCUAValueConfiguration: contains
-StaticDataInlet  "1"*--"1" StaticValueConfiguration: contains
+
+ConfigProvider <|-- FileConfigProvider
+ConfigProvider <|-- DictConfigProvider
+ConfigProvider "1"--*"1" Configuration: provides
+
+Shell  "1"*--"1" ShellConfiguration: configures
+Inlet  "1"*--"1" InletConfiguration: configures
+
+Configuration <|.. GeneralConfiguration
+GeneralConfiguration <|-- ShellConfiguration
+GeneralConfiguration <|-- InletConfiguration
+InletConfiguration <|-- CameraConfiguration
+InletConfiguration <|-- StaticValueConfiguration
+InletConfiguration <|-- OPCUAValueConfiguration
+InletConfiguration <|-- RestAPIConfiguration
+ShellConfiguration <|-- RestAPIShellConfiguration
+ShellConfiguration <|-- LocalShellConfiguration
 
 CameraInlet  "1"*--"1" CameraStatus: contains
 
-DataChunk <|-- GeneralDataChunk
+DataChunk <|.. GeneralDataChunk
+
+GeneralDataChunk "1"*--"1" DataChunkData: contains
+GeneralDataChunk "1"*--"1" DataChunkStatus: contains
+GeneralDataChunk "1"*--"1" MetadataChunk: contains
 
 DataChunkData <|-- DataChunkValue
 DataChunkData <|-- DataChunkImage
@@ -287,13 +381,11 @@ DataChunkStatus <|-- OPCUAReadStatus
 
 MetadataChunk <|-- MetadataChunkData
 
-DataChunk  "1"*--"*" DataChunkData: contains
-DataChunk  "1"*--"*" DataChunkStatus: contains
-DataChunk  "1"*--"*" MetadataChunk: contains
+Inlet "1"--*"1..*" DataChunk : generates
 
-GenericCameraInlet  "1"*--"*" DataChunk: uses
-NeoApiCameraInlet  "1"*--"*" DataChunk: uses
-StaticDataInlet  "1"*--"*" DataChunk: uses
-OPCUADataInlet  "1"*--"*" DataChunk: uses
+
+DataProcessor <|-- EncodeImageChunksToBase64
+DataProcessor <|-- ChunksToDict
+
 
 @enduml
