@@ -1,0 +1,24 @@
+@startuml
+skinparam linetype polyline
+left to right direction
+
+interface Data
+interface ConfigurationEdgeNode
+interface ConfigurationServerNode
+
+component EdgeNode {
+    component "PlantEye" as PlantEye_EdgeNode
+}
+
+component Server {
+    database FileSystem
+    component "PlantEye" as PlantEye_Server
+}
+
+Data -0)-  PlantEye_EdgeNode: DataInlets
+ConfigurationEdgeNode -0)- PlantEye_EdgeNode: ConfigProvider
+PlantEye_EdgeNode -0)- PlantEye_Server: RestAPI
+ConfigurationServerNode -0)- PlantEye_Server: ConfigProvider
+PlantEye_Server -0)- FileSystem
+
+@enduml

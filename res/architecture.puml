@@ -1,6 +1,5 @@
 @startuml
-
-!include dark_theme.puml
+skinparam linetype polyline
 
 interface Vision{
 +run(): void
