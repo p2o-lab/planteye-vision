@@ -27,8 +27,9 @@ class PipelineExecutor {
 +apply_configuration(): void
 +configure_inlets(): void
 +configure_shell(): void
++configure_processors(): void
 +single_execution(): list
-+add_transformer(): void
++add_processor(): void
 +run():run
 }
 
@@ -208,6 +209,14 @@ class ShellConfiguration{
 +cfg_dict: dict
 }
 
+class ProcessorConfiguration{
++type: str
++parameters: list
++metadata: dict
++access_data: dict
++cfg_dict: dict
+}
+
 class CameraConfiguration{
 +type: str
 +parameters: list
@@ -291,6 +300,15 @@ class CapturingStatus{
 +get_message(): str
 }
 
+class ProcessorStatus{
++operation: str
++code: int
++message: str
++infer_message(): void
++as_dict(): dict
++get_message(): str
+}
+
 class OPCUAReadStatus{
 +operation: str
 +code: int
@@ -299,6 +317,7 @@ class OPCUAReadStatus{
 +as_dict(): dict
 +get_message(): str
 }
+
 
 abstract class MetadataChunk{
 +as_dict: dict
@@ -311,6 +330,31 @@ class MetadataChunkData{
 
 interface DataProcessor{
 +apply_processor(input_data): void
+}
+
+interface NonConfigurableDataProcessor{
++apply_processor(input_data): void
+}
+
+interface ConfigurableDataProcessor{
++import_configuration(config_provider: ConfigProvider)
++apply_configuration(): void
++apply_processor(input_data): void
+}
+
+class TFModelInference{
+}
+
+class ImageResize{
+}
+
+class ImageCrop{
+}
+
+class ImageColorConversion{
+}
+
+class InputProcessor{
 }
 
 class EncodeImageChunksToBase64{
@@ -349,7 +393,7 @@ Inlet <|-- RestAPIInlet
 
 ConfigProvider <|-- FileConfigProvider
 ConfigProvider <|-- DictConfigProvider
-ConfigProvider "1"--*"1" Configuration: provides
+ConfigProvider -->"1" Configuration: provides
 
 Shell  "1"*--"1" ShellConfiguration: configures
 Inlet  "1"*--"1" InletConfiguration: configures
@@ -357,6 +401,7 @@ Inlet  "1"*--"1" InletConfiguration: configures
 Configuration <|.. GeneralConfiguration
 GeneralConfiguration <|-- ShellConfiguration
 GeneralConfiguration <|-- InletConfiguration
+GeneralConfiguration <|-- ProcessorConfiguration
 InletConfiguration <|-- CameraConfiguration
 InletConfiguration <|-- StaticValueConfiguration
 InletConfiguration <|-- OPCUAValueConfiguration
@@ -377,14 +422,21 @@ DataChunkData <|-- DataChunkImage
 
 DataChunkStatus <|-- CapturingStatus
 DataChunkStatus <|-- OPCUAReadStatus
+DataChunkStatus <|-- ProcessorStatus
 
 MetadataChunk <|-- MetadataChunkData
 
 Inlet "1"--*"1..*" DataChunk : generates
 
+DataProcessor <|-- NonConfigurableDataProcessor
+DataProcessor <|-- ConfigurableDataProcessor
 
-DataProcessor <|-- EncodeImageChunksToBase64
-DataProcessor <|-- ChunksToDict
-
+NonConfigurableDataProcessor <|-- EncodeImageChunksToBase64
+NonConfigurableDataProcessor <|-- ChunksToDict
+ConfigurableDataProcessor <|-- TFModelInference
+ConfigurableDataProcessor <|-- ImageResize
+ConfigurableDataProcessor <|-- ImageCrop
+ConfigurableDataProcessor <|-- ImageColorConversion
+ConfigurableDataProcessor <|-- InputProcessor
 
 @enduml
