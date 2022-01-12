@@ -75,6 +75,12 @@ class GenericCameraInlet(CameraInlet):
     def retrieve_data(self):
         data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
 
+        if not self.config.is_valid():
+            status = CapturingStatus(100)
+            data_chunk.add_status(status)
+            print('Step %s : No execution due to invalid configuration' % self.name)
+            return data_chunk
+
         if not self.camera_status.initialised:
             self.connect()
 

@@ -17,10 +17,13 @@ class FileConfigProvider(ConfigProvider):
         self.cfg_name = cfg_name
         self.cfg_file = cfg_file
 
-    def provide_config(self):
+    def read_config(self):
         with open(self.cfg_file) as config_file:
             cfg = safe_load(config_file)
         return cfg
+
+    def provide_config(self):
+        return self.read_config()
 
     def provide_name(self):
         return self.cfg_name

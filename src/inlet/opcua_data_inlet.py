@@ -35,15 +35,21 @@ class OPCUADataInlet(Inlet):
         self.opcua_client.connect()
 
     def retrieve_data(self):
-        value = self.poll_node()
         data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
-        if value is None:
-            status = OPCUAReadStatus(99)
-            data_chunk.add_status(status)
+
+        if self.config.is_valid():
+            value = self.poll_node()
+            if value is None:
+                status = OPCUAReadStatus(99)
+                data_chunk.add_status(status)
+            else:
+                status = OPCUAReadStatus(0)
+                data_chunk.add_status(status)
+                data_chunk.add_data(DataChunkValue(self.name, value))
         else:
-            status = OPCUAReadStatus(0)
+            status = OPCUAReadStatus(100)
             data_chunk.add_status(status)
-            data_chunk.add_data(DataChunkValue(self.name, value))
+            print('Step %s : No execution due to invalid configuration' % self.name)
 
         for metadata_variable, metadata_value in self.config.metadata.items():
             data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))

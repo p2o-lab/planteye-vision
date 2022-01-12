@@ -15,6 +15,7 @@ class GeneralConfiguration(Configuration):
         self.metadata = {}
         self.access_data = {}
         self.cfg_dict = {}
+        self.valid = True
 
     def read(self, cfg_provider: ConfigProvider):
         self.cfg_dict = cfg_provider.provide_config()
@@ -24,3 +25,6 @@ class GeneralConfiguration(Configuration):
             self.parameters = self.cfg_dict['parameters']
         if 'metadata' in self.cfg_dict.keys():
             self.metadata = self.cfg_dict['metadata']
+
+    def is_valid(self):
+        return self.valid

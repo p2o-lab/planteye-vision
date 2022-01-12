@@ -31,6 +31,8 @@ class StaticValueConfiguration(InletConfiguration):
         super().read(cfg_provider)
         if 'value' in self.cfg_dict.keys():
             self.value = self.cfg_dict['value']
+        else:
+            self.valid = False
 
 
 class OPCUAValueConfiguration(InletConfiguration):
@@ -49,5 +51,9 @@ class OPCUAValueConfiguration(InletConfiguration):
                 self.access_data['password'] = self.cfg_dict['access']['password']
             if 'node_ns' in self.cfg_dict['access']:
                 self.access_data['node_ns'] = self.cfg_dict['access']['node_ns']
+            else:
+                self.valid = False
             if 'node_id' in self.cfg_dict['access']:
                 self.access_data['node_id'] = self.cfg_dict['access']['node_id']
+            else:
+                self.valid = False

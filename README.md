@@ -15,7 +15,7 @@ python main.py
 Create a config file according to the following structure:
 ```yaml
 ---
-inlet:
+inlets:
   camera:
     type: local_camera_cv2 #baumer_camera_neoapi
     access:
@@ -66,7 +66,7 @@ inlet:
       unit: none
       interpretation: none
       description: a selected opcua variable
-processor:
+processors:
   input:
     type: input
     input_inlets:

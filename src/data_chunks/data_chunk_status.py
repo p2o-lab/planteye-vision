@@ -23,6 +23,8 @@ class CapturingStatus(DataChunkStatus):
             self.message = 'Frame NOT captured: capturing device is busy'
         elif self.code == 99:
             self.message = 'Frame NOT captured: unknown error'
+        elif self.code == 100:
+            self.message = 'Invalid configuration'
 
     def as_dict(self):
         return {self.operation: {'code': self.code, 'message': self.message}}
@@ -47,6 +49,8 @@ class OPCUAReadStatus(DataChunkStatus):
             self.message = 'Process value NOT read: error 2'
         elif self.code == 99:
             self.message = 'Process value NOT read: unknown error'
+        elif self.code == 100:
+            self.message = 'Invalid configuration'
 
     def as_dict(self):
         return {self.operation: {'code': self.code, 'message': self.message}}
@@ -64,6 +68,8 @@ class ProcessorStatus(DataChunkStatus):
             self.message = 'Processing value successful'
         elif self.code == 99:
             self.message = 'Value NOT processes: unknown error'
+        elif self.code == 100:
+            self.message = 'Invalid configuration'
 
     def as_dict(self):
         return {self.operation: {'code': self.code, 'message': self.message}}

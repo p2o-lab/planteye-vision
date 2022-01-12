@@ -54,6 +54,11 @@ class TFModelInference(ConfigurableDataProcessor):
 
     def apply_processor(self, image_np):
         data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
+        if not self.config.is_valid():
+            status = ProcessorStatus(100)
+            data_chunk.add_status(status)
+            print('Step %s : No execution due to invalid configuration' % self.name)
+            return data_chunk
         logging.debug('Running inference...')
         print('Inference Run')
         batched_image_np = tf.expand_dims(image_np, axis=0)
@@ -83,12 +88,17 @@ class ImageResize(ConfigurableDataProcessor):
         self.type = self.config.type
 
     def apply_configuration(self):
-        self.width = self.config.parameters['width']
-        self.height = self.config.parameters['height']
-        self.interpolation = self.config.parameters['interpolation']
+        self.width = self.config.access_data['width']
+        self.height = self.config.access_data['height']
+        self.interpolation = self.config.access_data['interpolation']
 
     def apply_processor(self, image_np):
         data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
+        if not self.config.is_valid():
+            status = ProcessorStatus(100)
+            data_chunk.add_status(status)
+            print('Step %s : No execution due to invalid configuration' % self.name)
+            return data_chunk
         logging.debug('Resizing...')
         print('Resize Run')
         width = int(self.width)
@@ -122,13 +132,18 @@ class ImageCrop(ConfigurableDataProcessor):
         self.type = self.config.type
 
     def apply_configuration(self):
-        self.x_init = self.config.parameters['x_init']
-        self.x_diff = self.config.parameters['x_diff']
-        self.y_init = self.config.parameters['y_init']
-        self.y_diff = self.config.parameters['y_diff']
+        self.x_init = self.config.access_data['x_init']
+        self.x_diff = self.config.access_data['x_diff']
+        self.y_init = self.config.access_data['y_init']
+        self.y_diff = self.config.access_data['y_diff']
 
     def apply_processor(self, image_np):
         data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
+        if not self.config.is_valid():
+            status = ProcessorStatus(100)
+            data_chunk.add_status(status)
+            print('Step %s : No execution due to invalid configuration' % self.name)
+            return data_chunk
         logging.debug('Cropping...')
         print('Crop Run')
         x_end = int(self.x_init+self.x_diff)
@@ -162,6 +177,11 @@ class ImageColorConversion(ConfigurableDataProcessor):
 
     def apply_processor(self, image_np):
         data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
+        if not self.config.is_valid():
+            status = ProcessorStatus(100)
+            data_chunk.add_status(status)
+            print('Step %s : No execution due to invalid configuration' % self.name)
+            return data_chunk
         logging.debug('Color conversion...')
         print('Color Conversion Run')
         color_conversion = eval(f'cv2.COLOR_{self.conversion}')
@@ -196,6 +216,10 @@ class InputProcessor(ConfigurableDataProcessor):
         logging.debug('Input processor...')
         print('Input Processor Run')
         output_data = []
+        if not self.config.is_valid():
+            print('Step %s : No execution due to invalid configuration' % self.name)
+            return None
+
         for inlet in self.input_inlets:
             for chunk in chunks:
                 if chunk.name == inlet:
