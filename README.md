@@ -2,6 +2,7 @@
 
 PlantEye/Vision is a tool for data collection.\
 Shortly, PlantEye/Vision requests data from different data sources (data inlets) that are given in the configuration file.\
+If any processor specified, then additional processed data will be generated.\
 Afterwards, the aggregated data are provided via a defined interface (shell). It might be a RESTAPI interface or local storage, wherein the data will be saved as files.
 
 ## Usage
@@ -65,12 +66,34 @@ inlet:
       unit: none
       interpretation: none
       description: a selected opcua variable
-#shell:
-#  local:
-#    type: local
-#    access:
-#      storage_path: ../data
-#      time_interval: 1000
+processor:
+  input:
+    type: input
+    input_inlets:
+      - camera
+  resize:
+    type: image_resize
+    parameters:
+      width: 250
+      height: 250
+      interpolation: INTER_NEAREST
+  crop:
+    type: image_crop
+    parameters:
+      x_init: 2
+      x_diff: 248
+      y_init: 2
+      y_diff: 248
+  color_to_grayscale:
+    type: color_conversion
+    parameters:
+      conversion: BGR2GRAY
+  inference:
+    type: tf_inference
+    access:
+      path_to_models: '../res/models/'
+      model_name: 'dogs_vs_cats'
+      model_version: '1.0'
 shell:
   rest_api:
     type: rest_api
@@ -104,6 +127,20 @@ A static value can be specified by giving its value in the configuration file.
 #### opcua_variable
 This inlet type allows to link an opcua variable.
 In this case the opcua node will be requested via a poll request and its value will be provided.
+
+### Supported processor types
+Processors are design to execute short pipelines that include data preprocessing and model inference.
+Please consider that each processor except input generates a data/status/metadata chunk that will be a part of the data saved locally or provided via Rest API.
+#### input
+Input processor is neccesary for link further processor steps with a selected inlet.
+#### image_resize
+Resize processes is made to resize images.
+#### image_crop
+Resize processes crops images.
+#### color_conversion
+Convert color map of the image, as parameter it requires conversion type as in the opencv function cv2.cvtColor().
+#### tf_inference
+This processor uses a specified tensorflow model to run inference.
 
 ### Supported shell types
 #### local
