@@ -1,4 +1,9 @@
 from src.vision import LocalVision
+import logging
 
-vision = LocalVision('../res/config_camera_inference_to_rest_api.yaml')
+logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%(funcName)s: %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+
+#vision = LocalVision('../res/config_opcua_camera_restapi.yaml')
+vision = LocalVision('../res/config_camera_to_disk.yaml')
 vision.run()

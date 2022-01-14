@@ -11,24 +11,26 @@ class DataChunkData(ABC):
 
 
 class DataChunkValue(DataChunkData):
-    def __init__(self, name: str, value):
+    def __init__(self, name: str, value, data_type: str):
         self.name = name
         self.value = value
+        self.data_type = data_type
 
     def as_dict(self):
-        return {self.name: self.value}
+        return {'name': self.name, 'value': self.value, 'data_type': self.data_type}
 
 
 class DataChunkImage(DataChunkData):
-    def __init__(self, name: str, value):
+    def __init__(self, name: str, value, data_type: str):
         self.name = name
         if isinstance(value, np.ndarray):
             self.value = value
         elif isinstance(value, str):
             self.value = self.base64_decoder(value)
+        self.data_type = data_type
 
     def as_dict(self):
-        return {self.name: self.value}
+        return {'name': self.name, 'value': self.value, 'type': self.data_type}
 
     def encode_as_base64(self):
         if isinstance(self.value, np.ndarray):

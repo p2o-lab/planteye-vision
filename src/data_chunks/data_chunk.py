@@ -23,10 +23,11 @@ class DataChunk(ABC):
 
 
 class GeneralDataChunk(DataChunk):
-    def __init__(self, name: str, type: str, access_data: dict):
+    def __init__(self, name: str, chunk_type: str, parameters: dict, hidden: bool = False):
         self.name = name
-        self.type = type
-        self.access_data = access_data
+        self.chunk_type = chunk_type
+        self.hidden = hidden
+        self.parameters = parameters
         self.data = []
         self.metadata = []
         self.status = []
@@ -53,4 +54,5 @@ class GeneralDataChunk(DataChunk):
         for status_chunk in self.status:
             status_dict.update(status_chunk.as_dict())
 
-        return {'inlet_type': self.type, 'inlet_name': self.name, 'inlet_access_data': self.access_data, 'data': data_dict, 'metadata': metadata_dict, 'status': status_dict}
+        return {'type': self.chunk_type, 'name': self.name, 'parameters': self.parameters, 'data': data_dict,
+                'metadata': metadata_dict, 'status': status_dict}

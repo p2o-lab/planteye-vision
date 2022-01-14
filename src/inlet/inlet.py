@@ -1,12 +1,10 @@
 from abc import ABC, abstractmethod
 from src.configuration.config_provider import ConfigProvider
+import time
+import logging
 
 
 class Inlet(ABC):
-    @abstractmethod
-    def import_configuration(self, config_provider: ConfigProvider):
-        pass
-
     @abstractmethod
     def apply_configuration(self):
         pass
@@ -14,3 +12,13 @@ class Inlet(ABC):
     @abstractmethod
     def retrieve_data(self):
         pass
+
+    @abstractmethod
+    def execute(self):
+        begin_time = time.time()
+        logging.debug('Inlet ' + self.name + ' (' + self.type + ') execution began')
+        inlet_result = self.retrieve_data()
+        end_time = time.time()
+        exec_duration = end_time - begin_time
+        logging.debug('Inlet ' + self.name + ' (' + self.type + ') execution finished, execution time:' + str(exec_duration))
+        return inlet_result

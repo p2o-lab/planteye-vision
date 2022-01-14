@@ -1,131 +1,139 @@
-from src.configuration.config_provider import ConfigProvider
-from src.configuration.configuration import GeneralConfiguration
+from src.configuration.configuration import ComponentConfiguration
 import cv2
 
 
-class ProcessorConfiguration(GeneralConfiguration):
+class ProcessorConfiguration(ComponentConfiguration):
     def __init__(self):
         super().__init__()
         self.seq_id = 0
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
 
 
 class TFModelInferenceProcessorConfiguration(ProcessorConfiguration):
     def __init__(self):
         super().__init__()
-        self.path_to_models = None
-        self.model_name = None
-        self.model_version = None
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
-        if 'access' in self.cfg_dict.keys():
-            if 'path_to_models' in self.cfg_dict['access']:
-                self.access_data['path_to_models'] = self.cfg_dict['access']['path_to_models']
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'path_to_models' in self.cfg_dict['parameters']:
+                self.parameters['path_to_models'] = self.cfg_dict['parameters']['path_to_models']
             else:
-                self.access_data['path_to_models'] = None
+                self.parameters['path_to_models'] = None
                 self.valid = False
-            if 'model_name' in self.cfg_dict['access']:
-                self.access_data['model_name'] = self.cfg_dict['access']['model_name']
+            if 'model_name' in self.cfg_dict['parameters']:
+                self.parameters['model_name'] = self.cfg_dict['parameters']['model_name']
             else:
-                self.access_data['model_name'] = None
+                self.parameters['model_name'] = None
                 self.valid = False
-            if 'model_version' in self.cfg_dict['access']:
-                self.access_data['model_version'] = self.cfg_dict['access']['model_version']
+            if 'model_version' in self.cfg_dict['parameters']:
+                self.parameters['model_version'] = self.cfg_dict['parameters']['model_version']
             else:
-                self.access_data['model_version'] = None
+                self.parameters['model_version'] = None
                 self.valid = False
+        else:
+            self.valid = False
 
 
 class ImageResizeProcessorConfiguration(ProcessorConfiguration):
     def __init__(self):
         super().__init__()
-        self.width = None
-        self.height = None
-        self.interpolation_method = 'INTER_NEAREST'
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
         if 'parameters' in self.cfg_dict.keys():
             if 'width' in self.cfg_dict['parameters']:
-                self.access_data['width'] = self.cfg_dict['parameters']['width']
+                self.parameters['width'] = self.cfg_dict['parameters']['width']
             else:
-                self.access_data['width'] = None
+                self.parameters['width'] = None
                 self.valid = False
             if 'height' in self.cfg_dict['parameters']:
-                self.access_data['height'] = self.cfg_dict['parameters']['height']
+                self.parameters['height'] = self.cfg_dict['parameters']['height']
             else:
-                self.access_data['height'] = None
+                self.parameters['height'] = None
                 self.valid = False
             if 'interpolation' in self.cfg_dict['parameters']:
-                self.access_data['interpolation'] = self.cfg_dict['parameters']['interpolation']
+                self.parameters['interpolation'] = self.cfg_dict['parameters']['interpolation']
             else:
-                self.access_data['height'] = 'INTER_NEAREST'
+                self.parameters['height'] = 'INTER_NEAREST'
+        else:
+            self.valid = False
 
 
 class ImageCropProcessorConfiguration(ProcessorConfiguration):
     def __init__(self):
         super().__init__()
-        self.x_init = None
-        self.x_diff = None
-        self.y_init = None
-        self.y_diff = None
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
         if 'parameters' in self.cfg_dict.keys():
             if 'x_init' in self.cfg_dict['parameters']:
-                self.access_data['x_init'] = self.cfg_dict['parameters']['x_init']
+                self.parameters['x_init'] = self.cfg_dict['parameters']['x_init']
             else:
-                self.access_data['x_init'] = None
+                self.parameters['x_init'] = None
                 self.valid = False
             if 'x_diff' in self.cfg_dict['parameters']:
-                self.access_data['x_diff'] = self.cfg_dict['parameters']['x_diff']
+                self.parameters['x_diff'] = self.cfg_dict['parameters']['x_diff']
             else:
-                self.access_data['x_diff'] = None
+                self.parameters['x_diff'] = None
                 self.valid = False
             if 'y_init' in self.cfg_dict['parameters']:
-                self.access_data['y_init'] = self.cfg_dict['parameters']['y_init']
+                self.parameters['y_init'] = self.cfg_dict['parameters']['y_init']
             else:
-                self.access_data['y_init'] = None
+                self.parameters['y_init'] = None
                 self.valid = False
             if 'y_diff' in self.cfg_dict['parameters']:
-                self.access_data['y_diff'] = self.cfg_dict['parameters']['y_diff']
+                self.parameters['y_diff'] = self.cfg_dict['parameters']['y_diff']
             else:
-                self.access_data['y_diff'] = None
+                self.parameters['y_diff'] = None
                 self.valid = False
+        else:
+            self.valid = False
 
 
 class ColorConversionProcessorConfiguration(ProcessorConfiguration):
     def __init__(self):
         super().__init__()
-        self.conversion = None
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
         if 'parameters' in self.cfg_dict.keys():
             if 'conversion' in self.cfg_dict['parameters']:
-                self.access_data['conversion'] = self.cfg_dict['parameters']['conversion']
+                self.parameters['conversion'] = self.cfg_dict['parameters']['conversion']
             else:
-                self.access_data['conversion'] = None
+                self.parameters['conversion'] = None
                 self.valid = False
+        else:
+            self.valid = False
 
 
 class InputProcessorConfiguration(ProcessorConfiguration):
     def __init__(self):
         super().__init__()
-        self.input_inlets = []
+        self.parameters['input_inlets'] = []
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
         if 'input_inlets' in self.cfg_dict.keys():
             if self.cfg_dict['input_inlets'] is not None:
-                self.access_data['input_inlets'] = self.cfg_dict['input_inlets']
+                self.parameters['input_inlets'] = self.cfg_dict['input_inlets']
             else:
-                self.access_data['input_inlets'] = []
+                self.parameters['input_inlets'] = []
                 self.valid = False
         else:
-            self.access_data['input_inlets'] = []
+            self.parameters['input_inlets'] = []
             self.valid = False
+
+
+class SaveOnDiskProcessorConfiguration(ProcessorConfiguration):
+    def __init__(self):
+        super().__init__()
+        self.parameters['save_path'] = '../data/'
+
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'save_path' in self.cfg_dict['parameters']:
+                self.parameters['save_path'] = self.cfg_dict['parameters']['save_path']

@@ -8,9 +8,13 @@ from src.data_chunks.data_chunk import GeneralDataChunk
 from src.data_chunks.data_chunk_status import CapturingStatus
 from src.data_chunks.metadata_chunk import MetadataChunkData
 from src.data_chunks.data_chunk_data import DataChunkImage
+from src.configuration.inlet_configuration import CameraConfiguration
 
 
 class GenericCameraInlet(CameraInlet):
+    def __init__(self, config: CameraConfiguration):
+        super().__init__(config)
+
     def set_parameter(self, parameter: str, requested_value: object) -> bool:
         """
         Sets a single parameter of capturing device.
@@ -48,7 +52,7 @@ class GenericCameraInlet(CameraInlet):
     def connect(self):
         while True:
             try:
-                self.camera_object = cv2.VideoCapture(self.config.access_data['device_id'])
+                self.camera_object = cv2.VideoCapture(self.config.parameters['device_id'])
             except Exception as exc:
                 logging.error('Capturing device not connected... trying again', exc_info=exc)
             if self.camera_object.isOpened():
@@ -57,7 +61,6 @@ class GenericCameraInlet(CameraInlet):
 
         self.camera_status.initialised = True
         logging.info('Capturing device initialised successfully')
-        logging.info(self.get_camera_info())
 
     def disconnect(self):
         if not self.camera_status.initialised:
@@ -73,7 +76,7 @@ class GenericCameraInlet(CameraInlet):
             self.camera_status.initialised = True
 
     def retrieve_data(self):
-        data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
+        data_chunk = GeneralDataChunk(self.name, self.type, self.config.parameters, hidden=self.config.hidden)
 
         if not self.config.is_valid():
             status = CapturingStatus(100)
@@ -106,7 +109,7 @@ class GenericCameraInlet(CameraInlet):
         self.camera_status.capturing = False
 
         if captured:
-            data_chunk.add_data(DataChunkImage('frame', frame_np))
+            data_chunk.add_data(DataChunkImage('frame', frame_np, 'base64_png'))
 
             status = CapturingStatus(0)
             data_chunk.add_status(status)
@@ -124,5 +127,5 @@ class GenericCameraInlet(CameraInlet):
             self.camera_status.initialised = False
             return data_chunk
 
-    def get_camera_info(self):
-        return 'Camera info'
+    def execute(self):
+        return super().execute()

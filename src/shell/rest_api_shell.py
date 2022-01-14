@@ -12,25 +12,19 @@ class RestAPIShell(Shell):
     This class describes an REST API shell
     """
 
-    def __init__(self):
-        self.config = RestAPIShellConfiguration()
-        self.webserver_name = 'unnamed'
+    def __init__(self, config: RestAPIShellConfiguration):
+        self.config = config
         self.webserver = None
         self.webserver_thread = None
         self.response_callback = None
 
-    def import_configuration(self, config_provider: ConfigProvider):
-        self.config.read(config_provider)
-        self.webserver_name = config_provider.provide_name()
-
     def apply_configuration(self):
-        name = self.webserver_name
-        host = self.config.access_data['host']
-        port = self.config.access_data['port']
-        self.webserver = RestAPIWebserver(name, host, port)
+        host = self.config.parameters['host']
+        port = self.config.parameters['port']
+        self.webserver = RestAPIWebserver('PlantEye', host, port)
 
-        endpoint = self.config.access_data['endpoint']
-        endpoint_name = self.config.access_data['endpoint_name']
+        endpoint = self.config.parameters['endpoint']
+        endpoint_name = 'PlantEye REST API Shell'
         self.webserver.add_url_rule(endpoint, endpoint_name, self.response_callback, ['GET'])
         self.webserver.add_url_rule('/upload_config', 'configuration update', self.upload_configuration_callback, ['POST'])
         self.webserver.add_url_rule('/', 'homepage', self.homepage_callback, ['GET'])
@@ -40,7 +34,7 @@ class RestAPIShell(Shell):
         self.response_callback = callback
 
     def homepage_callback(self):
-        welcome_str = 'Welcome to PlantEye API. Available endpoint is %s' % self.config.access_data['endpoint']
+        welcome_str = 'Welcome to PlantEye API. Available endpoint is %s' % self.config.parameters['endpoint']
         return welcome_str
 
     def upload_configuration_callback(self):

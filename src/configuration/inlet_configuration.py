@@ -1,36 +1,38 @@
 from src.configuration.config_provider import ConfigProvider
-from src.configuration.configuration import GeneralConfiguration
+from src.configuration.configuration import ComponentConfiguration
 
 
-class InletConfiguration(GeneralConfiguration):
+class InletConfiguration(ComponentConfiguration):
     def __init__(self):
         super().__init__()
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
 
 
 class CameraConfiguration(InletConfiguration):
     def __init__(self):
         super().__init__()
-        self.access_data = {'device_id': 0}
+        self.parameters = {'device_id': 0}
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
-        if 'access' in self.cfg_dict.keys():
-            if 'device_id' in self.cfg_dict['access']:
-                self.access_data['device_id'] = self.cfg_dict['access']['device_id']
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'device_id' in self.cfg_dict['parameters']:
+                self.parameters['device_id'] = self.cfg_dict['parameters']['device_id']
 
 
 class StaticValueConfiguration(InletConfiguration):
     def __init__(self):
         super().__init__()
-        self.value = None
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
-        if 'value' in self.cfg_dict.keys():
-            self.value = self.cfg_dict['value']
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'value' in self.cfg_dict['parameters']:
+                self.parameters['value'] = self.cfg_dict['parameters']['value']
+            else:
+                self.valid = False
         else:
             self.valid = False
 
@@ -38,22 +40,24 @@ class StaticValueConfiguration(InletConfiguration):
 class OPCUAValueConfiguration(InletConfiguration):
     def __init__(self):
         super().__init__()
-        self.access_data = {'server': '0.0.0.0', 'username': '', 'password': '', 'node_ns': None, 'node_id': None}
+        self.parameters = {'server': '0.0.0.0', 'username': '', 'password': '', 'node_ns': None, 'node_id': None}
 
-    def read(self, cfg_provider: ConfigProvider):
-        super().read(cfg_provider)
-        if 'access' in self.cfg_dict.keys():
-            if 'server' in self.cfg_dict['access']:
-                self.access_data['server'] = self.cfg_dict['access']['server']
-            if 'username' in self.cfg_dict['access']:
-                self.access_data['username'] = self.cfg_dict['access']['username']
-            if 'password' in self.cfg_dict['access']:
-                self.access_data['password'] = self.cfg_dict['access']['password']
-            if 'node_ns' in self.cfg_dict['access']:
-                self.access_data['node_ns'] = self.cfg_dict['access']['node_ns']
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'server' in self.cfg_dict['parameters']:
+                self.parameters['server'] = self.cfg_dict['parameters']['server']
+            if 'username' in self.cfg_dict['parameters']:
+                self.parameters['username'] = self.cfg_dict['parameters']['username']
+            if 'password' in self.cfg_dict['parameters']:
+                self.parameters['password'] = self.cfg_dict['parameters']['password']
+            if 'node_ns' in self.cfg_dict['parameters']:
+                self.parameters['node_ns'] = self.cfg_dict['parameters']['node_ns']
             else:
                 self.valid = False
-            if 'node_id' in self.cfg_dict['access']:
-                self.access_data['node_id'] = self.cfg_dict['access']['node_id']
+            if 'node_id' in self.cfg_dict['parameters']:
+                self.parameters['node_id'] = self.cfg_dict['parameters']['node_id']
             else:
                 self.valid = False
+        else:
+            self.valid = False

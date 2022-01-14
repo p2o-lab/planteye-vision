@@ -9,43 +9,40 @@ from src.data_chunks.data_chunk import GeneralDataChunk
 from src.data_chunks.data_chunk_data import DataChunkValue
 from src.data_chunks.metadata_chunk import MetadataChunkData
 from src.data_chunks.data_chunk_status import OPCUAReadStatus
-from src.configuration.config_provider import ConfigProvider
 
 
 class OPCUADataInlet(Inlet):
     """
     This class describes an OPC UA data inlet
     """
-    def __init__(self):
-        self.config = OPCUAValueConfiguration()
+    def __init__(self, config: OPCUAValueConfiguration):
+        self.config = config
         self.name = None
         self.type = None
         self.opcua_client = None
 
-    def import_configuration(self, config_provider: ConfigProvider):
-        self.name = config_provider.provide_name()
-        self.config.read(config_provider)
-        self.type = self.config.type
-
     def apply_configuration(self):
-        opcua_server_url = self.config.access_data['server']
-        opcua_server_username = self.config.access_data['username']
-        opcua_server_pwd = self.config.access_data['password']
+        opcua_server_url = self.config.parameters['server']
+        opcua_server_username = self.config.parameters['username']
+        opcua_server_pwd = self.config.parameters['password']
+        self.name = self.config.name
+        self.type = self.config.type
         self.opcua_client = OPCUAClient(opcua_server_url, opcua_server_username, opcua_server_pwd)
         self.opcua_client.connect()
 
     def retrieve_data(self):
-        data_chunk = GeneralDataChunk(self.name, self.type, self.config.access_data)
+        data_chunk = GeneralDataChunk(self.name, self.type, self.config.parameters, hidden=self.config.hidden)
 
         if self.config.is_valid():
             value = self.poll_node()
+            data_type = 'diverse'
             if value is None:
                 status = OPCUAReadStatus(99)
                 data_chunk.add_status(status)
             else:
                 status = OPCUAReadStatus(0)
                 data_chunk.add_status(status)
-                data_chunk.add_data(DataChunkValue(self.name, value))
+                data_chunk.add_data(DataChunkValue('opcua_value', value, data_type))
         else:
             status = OPCUAReadStatus(100)
             data_chunk.add_status(status)
@@ -61,21 +58,21 @@ class OPCUADataInlet(Inlet):
                 'Cannot poll %s from OPCA UA server %s (no connection)' % (self.name, self.opcua_client.get_url()))
             return None
         try:
-            node_obj = ua.NodeId(self.config.access_data['node_id'], self.config.access_data['namespace'])
+            node_obj = ua.NodeId(self.config.parameters['node_id'], self.config.parameters['node_ns'])
             node = self.opcua_client.get_server_obj().get_node(node_obj)
             data_variant = node.get_data_value()
             timestamp = data_variant.SourceTimestamp
             value = data_variant.Value.Value
             logging.info('Server %s, Node %s: Value polled (Timestamp %s, Value %s)' % (
-                self.opcua_client.get_url(), str(self.config.access_data['node_id']), str(timestamp), str(value)))
+                self.opcua_client.get_url(), str(self.config.parameters['node_id']), str(timestamp), str(value)))
             return value
         except Exception as exc:
-            logging.info('Server %s, Node %s: Value polling failed' % (self.opcua_client.get_url(), str(self.config.access_data['node_id'])),
+            logging.info('Server %s, Node %s: Value polling failed' % (self.opcua_client.get_url(), str(self.config.parameters['node_id'])),
                          exc_info=exc)
             return None
 
-    def get_opcua_server_info(self):
-        return 'Server info'
+    def execute(self):
+        return super().execute()
 
 
 class OPCUAClient:

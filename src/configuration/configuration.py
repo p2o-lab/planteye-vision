@@ -4,23 +4,30 @@ from src.configuration.config_provider import ConfigProvider
 
 class Configuration(ABC):
     @abstractmethod
-    def read(self, cfg_provider: ConfigProvider):
+    def read(self, cfg_dict: dict):
         pass
 
 
-class GeneralConfiguration(Configuration):
+class ComponentConfiguration(Configuration):
     def __init__(self):
+        self.name = 'unnamed'
         self.type = 'unspecified'
-        self.parameters = []
+        self.hidden = False
+        self.parameters = {}
         self.metadata = {}
-        self.access_data = {}
         self.cfg_dict = {}
         self.valid = True
 
-    def read(self, cfg_provider: ConfigProvider):
-        self.cfg_dict = cfg_provider.provide_config()
+    def read(self, cfg_dict):
+        self.cfg_dict = cfg_dict
+        if 'name' in self.cfg_dict.keys():
+            self.name = self.cfg_dict['name']
         if 'type' in self.cfg_dict.keys():
             self.type = self.cfg_dict['type']
+        else:
+            self.valid = False
+        if 'hidden' in self.cfg_dict.keys():
+            self.hidden = self.cfg_dict['hidden']
         if 'parameters' in self.cfg_dict.keys():
             self.parameters = self.cfg_dict['parameters']
         if 'metadata' in self.cfg_dict.keys():
