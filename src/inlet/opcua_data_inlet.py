@@ -21,6 +21,10 @@ class OPCUADataInlet(Inlet):
         self.type = None
         self.opcua_client = None
 
+    def __del__(self):
+        if self.opcua_client is not None:
+            self.opcua_client.disconnect()
+
     def apply_configuration(self):
         opcua_server_url = self.config.parameters['server']
         opcua_server_username = self.config.parameters['username']
@@ -50,7 +54,7 @@ class OPCUADataInlet(Inlet):
 
         for metadata_variable, metadata_value in self.config.metadata.items():
             data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))
-        return data_chunk
+        return [data_chunk]
 
     def poll_node(self):
         if not self.opcua_client.get_connection_status():

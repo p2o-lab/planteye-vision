@@ -4,6 +4,7 @@ import threading
 
 from src.shell.shell import Shell
 from src.configuration.shell_configuration import RestAPIShellConfiguration
+from src.configuration.planteye_configuration import PlantEyeConfiguration
 
 
 class RestAPIShell(Shell):
@@ -45,12 +46,8 @@ class RestAPIShell(Shell):
             uploaded_cfg = request.json
             print(uploaded_cfg)
 
-            if 'inlets' in uploaded_cfg.keys():
-                self.pipeline_executor.config_dict['inlets'] = uploaded_cfg['inlets']
-            if 'processors' in uploaded_cfg.keys():
-                self.pipeline_executor.config_dict['processors'] = uploaded_cfg['processors']
-
-            self.pipeline_executor.reapply_configuration()
+            self.pipeline_executor.config.update(uploaded_cfg)
+            self.pipeline_executor.update_configuration()
 
             return 'Configuration applied'
         else:

@@ -134,7 +134,7 @@ class PipeLineExecutor:
     def inlets_execute(self):
         data_chunks = []
         for inlet in self.inlets:
-            data_chunks.append(inlet.execute())
+            data_chunks.extend(inlet.execute())
         return data_chunks
 
     def processors_execute(self, data_chunks):

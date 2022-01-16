@@ -15,6 +15,10 @@ class GenericCameraInlet(CameraInlet):
     def __init__(self, config: CameraConfiguration):
         super().__init__(config)
 
+    def __del__(self):
+        if self.camera_object is not None:
+            self.disconnect()
+
     def set_parameter(self, parameter: str, requested_value: object) -> bool:
         """
         Sets a single parameter of capturing device.
@@ -82,7 +86,7 @@ class GenericCameraInlet(CameraInlet):
             status = CapturingStatus(100)
             data_chunk.add_status(status)
             print('Step %s : No execution due to invalid configuration' % self.name)
-            return data_chunk
+            return [data_chunk]
 
         if not self.camera_status.initialised:
             self.connect()
@@ -95,14 +99,14 @@ class GenericCameraInlet(CameraInlet):
             data_chunk.add_status(status)
             logging.warning(status.get_message())
             self.camera_status.initialised = False
-            return data_chunk
+            return [data_chunk]
 
         if self.camera_status.capturing:
             status = CapturingStatus(2)
             data_chunk.add_status(status)
             logging.warning(status.get_message())
             self.camera_status.initialised = False
-            return data_chunk
+            return [data_chunk]
 
         self.camera_status.capturing = True
         captured, frame_np = self.camera_object.read()
@@ -119,13 +123,13 @@ class GenericCameraInlet(CameraInlet):
             data_chunk.add_metadata(MetadataChunkData('shape', frame_np.shape))
             for metadata_variable, metadata_value in self.config.metadata.items():
                 data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))
-            return data_chunk
+            return [data_chunk]
         else:
             status = CapturingStatus(99)
             data_chunk.add_status(status)
             logging.warning(status.get_message())
             self.camera_status.initialised = False
-            return data_chunk
+            return [data_chunk]
 
     def execute(self):
         return super().execute()

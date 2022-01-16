@@ -26,22 +26,45 @@ class PlantEyeConfiguration(Configuration):
         if not isinstance(cfg_dict, dict):
             self.valid_structure = False
         self.cfg_dict = cfg_dict
+
         if 'shell' in self.cfg_dict.keys():
             shell_cfg_dict = self.cfg_dict['shell']
-            self._read_shell_config(shell_cfg_dict)
+            shell_cfg = self._read_shell_config(shell_cfg_dict)
+            if shell_cfg is not None:
+                self.shell = shell_cfg
+            else:
+                self.valid_structure = False
         else:
             self.valid_structure = False
 
         if 'inlets' in self.cfg_dict.keys():
             inlets_cfg_list = list(self.cfg_dict['inlets'].values())
-            self._read_inlet_configs(inlets_cfg_list)
+            self.inlets = self._read_inlet_configs(inlets_cfg_list)
 
         if 'processors' in self.cfg_dict.keys():
             processors_cfg_list = list(self.cfg_dict['processors'].values())
-            self._read_processor_configs(processors_cfg_list)
+            self.processors = self._read_processor_configs(processors_cfg_list)
 
         self.ongoing_config = False
         self.configured_once = True
+
+    def update(self, cfg_dict):
+        self.ongoing_config = True
+        if 'inlets' in cfg_dict.keys():
+            if len(cfg_dict['inlets']) > 0:
+                inlets_cfg_list = list(cfg_dict['inlets'].values())
+                self.inlets = self._read_inlet_configs(inlets_cfg_list)
+            else:
+                self.inlets = []
+
+        if 'processors' in cfg_dict.keys():
+            if len(cfg_dict['processors']) > 0:
+                processors_cfg_list = list(cfg_dict['processors'].values())
+                self.processors = self._read_processor_configs(processors_cfg_list)
+            else:
+                self.processors = []
+
+        self.ongoing_config = True
 
     def _read_shell_config(self, shell_cfg_dict):
         logging.info('Shell configuration import...')
@@ -51,20 +74,18 @@ class PlantEyeConfiguration(Configuration):
             elif shell_cfg_dict['type'] == 'rest_api':
                 shell_cfg = RestAPIShellConfiguration()
             else:
-                self.valid_structure = False
-                return
+                logging.info('Fail to import shell configuration')
+                return None
+            logging.info('Shell configuration imported')
             shell_cfg.read(shell_cfg_dict)
-            self.shell = shell_cfg
+            return shell_cfg
         else:
-            self.valid_structure = False
-        logging.info('Shell configuration imported')
+            logging.info('Fail to import shell configuration')
+            return None
 
     def _read_inlet_configs(self, inlets_cfg_list):
         logging.info('Inlet configurations import...')
-        if len(inlets_cfg_list) == 0:
-            logging.info('No inlets specified in configuration')
-            return
-
+        inlet_configs = []
         for inlet_cfg_dict in inlets_cfg_list:
             if 'type' in inlet_cfg_dict.keys():
                 if inlet_cfg_dict['type'] == 'static_variable':
@@ -74,21 +95,15 @@ class PlantEyeConfiguration(Configuration):
                 elif inlet_cfg_dict['type'] in ['local_camera_cv2', 'baumer_camera_neo']:
                     inlet_cfg = CameraConfiguration()
                 else:
-                    self.valid_structure = False
-                    return
+                    continue
                 inlet_cfg.read(inlet_cfg_dict)
-                self.inlets.append(inlet_cfg)
-            else:
-                self.valid_structure = False
-
+                inlet_configs.append(inlet_cfg)
         logging.info('Inlets configuration imported')
+        return inlet_configs
 
     def _read_processor_configs(self, processors_cfg_list):
-        logging.info('Processor configurations import...')
-        if len(processors_cfg_list) == 0:
-            logging.info('No processors specified in configuration')
-            return
-
+        logging.info('Processors configurations import...')
+        processor_configs = []
         for processor_cfg_dict in processors_cfg_list:
             if 'type' in processor_cfg_dict.keys():
                 if processor_cfg_dict['type'] == 'input':
@@ -104,14 +119,11 @@ class PlantEyeConfiguration(Configuration):
                 elif processor_cfg_dict['type'] == 'save_on_disk':
                     processor_cfg = SaveOnDiskProcessorConfiguration()
                 else:
-                    self.valid_structure = False
-                    return
+                    continue
                 processor_cfg.read(processor_cfg_dict)
-                self.processors.append(processor_cfg)
-            else:
-                self.valid_structure = False
-
+                processor_configs.append(processor_cfg)
         logging.info('Processors configuration imported')
+        return processor_configs
 
     def is_valid(self):
         return self.valid_structure * self._components_are_valid() * self.configured_once

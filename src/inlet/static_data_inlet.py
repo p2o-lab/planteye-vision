@@ -24,7 +24,7 @@ class StaticDataInlet(Inlet):
         data_chunk.add_data(DataChunkValue('static_value', self.config.parameters['value'], data_type))
         for metadata_variable, metadata_value in self.config.metadata.items():
             data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))
-        return data_chunk
+        return [data_chunk]
 
     def execute(self):
         return super().execute()
