@@ -1,19 +1,14 @@
 import logging
 import threading
-import os
-import json
 from time import time, sleep
-import cv2
-from src.common.timestamp import get_timestamp
 
 from src.shell.shell import Shell
 from src.configuration.shell_configuration import PeriodicalLocalShellConfiguration
-from src.data_chunks.data_chunk_data import DataChunkImage
 
 
 class PeriodicalLocalShell(Shell):
     """
-    This class describes a local shell that request data periodically and saves them on local disk
+    This class describes a local shell that requests data periodically
     """
     def __init__(self, config: PeriodicalLocalShellConfiguration):
         self.config = config
@@ -40,25 +35,36 @@ class TimeScheduler:
 
     def start(self):
         self.stop_flag = False
-        self.thread = threading.Thread(target=self.single_step, args=[])
+        self.thread = threading.Thread(target=self.executable, args=[])
         self.thread.start()
 
     def stop(self):
         self.stop_flag = True
 
-    def single_step(self):
-        cycle_begin = time() - self.time_interval / 1000.0
+    def executable(self):
+        expected_step_end = time() - self.time_interval / 1000.0
         while not self.stop_flag:
-            logging.info('Loop step')
-            cycle_begin = cycle_begin + self.time_interval / 1000.0
-            if cycle_begin + 0.010 < time():
-                logging.error('Capturing skipped (consider increasing interval)')
+            print('Loop step %f' % time())
+            logging.info('Shell execution step')
+            step_begin = time()
+            expected_step_end = expected_step_end + self.time_interval / 1000.0
+            print('Step begin %f' % step_begin)
+            print('Expected step end %f' % expected_step_end)
+            if step_begin > expected_step_end:
+                logging.error('Shell execution step skipped (consider increasing interval)')
+                print('Skip step')
                 continue
+            print('Execute step')
+            logging.info('Shell execution step began')
             self.executed_function()
-            debug_str = 'Execution duration %i ms' % int((time() - cycle_begin) * 1000)
+            step_duration = time() - step_begin
+            debug_str = 'Shell execution step duration %i ms' % int(step_duration * 1000)
             logging.debug(debug_str)
-            cycle_duration = time() - cycle_begin
-            if cycle_duration > self.time_interval / 1000.0:
-                logging.warning('Capturing takes longer ' + str(cycle_duration) + ' than given time intervals')
+            print('End step %f' % time())
+            print('Step execution duration %f' % step_duration)
+            if time() > expected_step_end:
+                print('Step execution longer than interval')
+                logging.warning('Shell execution step took longer (' + str(step_duration) + ') than given time interval ' + '(' + str(self.time_interval) + ')')
             else:
-                sleep(max(self.time_interval / 1000.0 - (time() - cycle_begin), 0))
+                print('Sleep for %f' % max(expected_step_end-time(), 0))
+                sleep(max(expected_step_end-time(), 0))

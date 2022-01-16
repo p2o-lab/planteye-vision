@@ -33,6 +33,25 @@ class CapturingStatus(DataChunkStatus):
         return self.message
 
 
+class ProcessorStatus(DataChunkStatus):
+    def __init__(self, code: int):
+        self.operation = 'Processor'
+        self.code = code
+        self.message = 'Unknown state'
+        self.infer_message()
+
+    def infer_message(self):
+        if self.code == 0:
+            self.message = 'Processing value successful'
+        elif self.code == 99:
+            self.message = 'Value NOT processes: unknown error'
+        elif self.code == 100:
+            self.message = 'Invalid configuration'
+
+    def as_dict(self):
+        return {self.operation: {'code': self.code, 'message': self.message}}
+    
+
 class OPCUAReadStatus(DataChunkStatus):
     def __init__(self, code: int):
         self.operation = 'Reading process value over OPC UA'
@@ -49,25 +68,6 @@ class OPCUAReadStatus(DataChunkStatus):
             self.message = 'Process value NOT read: error 2'
         elif self.code == 99:
             self.message = 'Process value NOT read: unknown error'
-        elif self.code == 100:
-            self.message = 'Invalid configuration'
-
-    def as_dict(self):
-        return {self.operation: {'code': self.code, 'message': self.message}}
-
-
-class ProcessorStatus(DataChunkStatus):
-    def __init__(self, code: int):
-        self.operation = 'Processor'
-        self.code = code
-        self.message = 'Unknown state'
-        self.infer_message()
-
-    def infer_message(self):
-        if self.code == 0:
-            self.message = 'Processing value successful'
-        elif self.code == 99:
-            self.message = 'Value NOT processes: unknown error'
         elif self.code == 100:
             self.message = 'Invalid configuration'
 

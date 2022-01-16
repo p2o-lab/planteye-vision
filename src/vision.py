@@ -1,5 +1,4 @@
 from src.pipeline_execution.pipeline_executor import PipeLineExecutor
-from src.configuration.config_provider import FileConfigProvider
 from src.configuration.planteye_configuration import PlantEyeConfiguration
 from yaml import safe_load
 

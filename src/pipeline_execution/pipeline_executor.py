@@ -27,7 +27,7 @@ class PipeLineExecutor:
         else:
             logging.info('Cannot apply configuration, configuration is invalid')
 
-    def reapply_configuration(self):
+    def update_configuration(self):
         self.cfg_update_flag = True
         self.configure_inlets()
         self.configure_processors()
@@ -110,15 +110,17 @@ class PipeLineExecutor:
             elif isinstance(self.shell, PeriodicalLocalShell):
                 return None
 
-        data_chunks = self.inlets_execute()
-        self.processors_execute(data_chunks)
+        inlet_result = self.inlets_execute()
+        processors_result = self.processors_execute(inlet_result)
+        cleaned_processors_result = self.remove_duplicates(processors_result)
+        combined_result = inlet_result + cleaned_processors_result
 
         if isinstance(self.shell, RestAPIShell):
-            EncodeImageChunksToBase64().execute(data_chunks)
-            data_chunks_dict = ChunksToDict().execute(data_chunks)
+            EncodeImageChunksToBase64().execute(combined_result)
+            data_chunks_dict = ChunksToDict().execute(combined_result)
             result = json.dumps(data_chunks_dict)
         elif isinstance(self.shell, PeriodicalLocalShell):
-            result = data_chunks
+            result = combined_result
         else:
             result = None
 
@@ -137,6 +139,8 @@ class PipeLineExecutor:
 
     def processors_execute(self, data_chunks):
         processing_result = data_chunks
+        processor_results = []
+
         for processor in self.processors:
             if isinstance(processor, InputProcessor):
                 processing_result = processor.execute(processing_result)
@@ -154,8 +158,12 @@ class PipeLineExecutor:
                 logging.error('Pipeline execution aborted, processor ' + processor.name + ' returned nothing')
                 break
 
-            data_chunks.extend(processing_result)
-        data_chunks = list(dict.fromkeys(data_chunks))
+            processor_results.extend(processing_result)
+
+        return processor_results
+
+    def remove_duplicates(self, data_chunks):
+        return list(dict.fromkeys(data_chunks))
 
     def run(self):
         self.apply_configuration()

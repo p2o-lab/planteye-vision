@@ -5,44 +5,54 @@ interface Vision{
 +run(): void
 }
 
-class VisionLocalConfiguration{
-+path_to_config_file: str
-+cfg_provider: FileConfigProvider
-+pipeline_exec: PipelineExecutor
-}
+class PlantEyeConfiguration{
++type: str
++name: str
++shell: ShellConfiguration
++inlets: list of InletConfiguration
++processors: list of ProcessorConfiguration
++cfg_dict: dict
++configured_once: bool
++valid_structure: bool
++ongoing_config: bool
++read(cfg_dict: dict): void
+-_read_shell_config(shell_cfg_dict: dict): void
+-_read_inlet_configs(inlets_cfg_list: list of dicts): void
+-_read_processor_configs(processors_cfg_list: list of dicts): void
++is_valid(): bool
+-_components_are_valid(): bool
++get_shell_config(): ShellConfiguration
++get_inlet_configs(): list of InletConfiguration
++get_processor_configs(): list of ProcessorConfiguration
 
-class VisionOnlineConfiguration{
-+cfg_provider: FileConfigProvider
-+pipeline_exec: PipelineExecutor
 }
-note top: not implemented yet
 
 class PipelineExecutor {
-+config_provider: ConfigProvider
-+config_dict: dict
++config: PlantEyeConfiguration
 +shell: Shell
 +inlets: list
 +processors: list
-+read_configuration(): void
++cfg_update_flag: bool
 +apply_configuration(): void
-+configure_inlets(): void
++update_configuration(): void
 +configure_shell(): void
++configure_inlets(): void
 +configure_processors(): void
 +single_execution(): list
-+add_processor(): void
++inlets_execute(): list of DataChunk
++processors_execute(data_chunks: list of DataChunk): list of DataChunk
++remove_duplicates(data_chunks: list of DataChunk): list of DataChunk
 +run():run
 }
 
 interface Shell{
-+import_configuration(config_provider: ConfigProvider)
 +apply_configuration(): void
 +attach_callback(callback: callable): void
 }
 
 
-class LocalShell{
-+config: Configuration
-+name: str
+class PeriodicalLocalShell{
++config: PeriodicalLocalShellConfiguration
 +time_scheduler: TimeScheduler
 +callback: callable
 +execution_step(): void
@@ -53,16 +63,21 @@ class TimeScheduler{
 +executed_function: callable
 +thread: threading.Thread()
 +stop_flag: bool
++start(): void
++stop(): void
++executable(): void
 }
 
 
 class RestAPIShell{
-+config: Configuration
-+webserver_name: str
++config: RestAPIConfiguration
 +webserver: RestAPIWebserver
 +webserver_thread: threading.Thread()
 +response_callback: callable
++pipeline_executor: callable
 +homepage_callback(callback: callable): void
++upload_configuration_callback(): void
++enable_configuration_update_via_restapi(pipeline_executor: callable): void
 +connect(): void
 +disconnect(): void
 }
@@ -162,71 +177,41 @@ class RestAPIInlet
 }
 note top: not implemented yet
 
-interface ConfigProvider{
-+provide_config(): void
-+provide_name(): void
-}
-
-class FileConfigProvider{
-+cfg_name: str
-+cfg_file: str
-+provide_config(): dict
-+provide_name(): str
-}
-
-class DictConfigProvider{
-+cfg_name: str
-+cfg_dict: dict
-+provide_config(): dict
-+provide_name(): str
-}
 
 interface Configuration{
-+read(cfg_provider: ConfigProvider): void
++read(cfg_dict: dict): void
 }
 
-abstract class GeneralConfiguration{
+abstract class ComponentConfiguration{
++name: str
 +type: str
++hidden: bool
 +parameters: list
 +metadata: dict
-+access_data: dict
 +cfg_dict: dict
++valid: bool
++is_valid(): bool
+}
+
+
+class ShellConfiguration{
+}
+
+class RestAPIShellConfiguration{
+}
+
+class PeriodicalLocalShellConfiguration{
++storage_path: str
++time_interval: float
 }
 
 class InletConfiguration{
-+type: str
-+parameters: list
-+metadata: dict
-+access_data: dict
-+cfg_dict: dict
-}
-
-class ShellConfiguration{
-+type: str
-+parameters: list
-+metadata: dict
-+access_data: dict
-+cfg_dict: dict
-}
-
-class ProcessorConfiguration{
-+type: str
-+parameters: list
-+metadata: dict
-+access_data: dict
-+cfg_dict: dict
 }
 
 class CameraConfiguration{
-+type: str
-+parameters: list
-+metadata: dict
-+access_data: dict
-+cfg_dict: dict
 }
 
 class StaticValueConfiguration{
-+value: str, int, float, bool
 }
 
 class OPCUAValueConfiguration{
@@ -236,12 +221,26 @@ class RestAPIConfiguration{
 }
 note top: not implemented yet
 
-class RestAPIShellConfiguration{
+class ProcessorConfiguration{
++seq_id: int
 }
 
-class LocalShellConfiguration{
-+storage_path: str
-+time_interval: float
+class TFModelInferenceProcessorConfiguration{
+}
+
+class ImageResizeProcessorConfiguration{
+}
+
+class ImageCropProcessorConfiguration{
+}
+
+class ColorConversionProcessorConfiguration{
+}
+
+class InputProcessorConfiguration{
+}
+
+class SaveOnDiskProcessorConfiguration{
 }
 
 class CameraStatus{
@@ -262,8 +261,9 @@ interface DataChunk{
 
 class GeneralDataChunk{
 +name: str
-+type: str
-+access_data: dict
++chunk_type: str
++hidden: bool
++parameters: dict
 +data: list
 +metadata: list
 +status: list
@@ -277,11 +277,13 @@ abstract class DataChunkData{
 class DataChunkValue{
 +name: str
 +value: str, int, float, bool
++data_type: str
 }
 
 class DataChunkImage{
 +name: str
 +value: np.ndarray, str
++data_type: str
 +encode_as_base64(): void
 +base64_decoder(frame:str): np.ndarray
 }
@@ -373,12 +375,14 @@ VisionOnlineConfiguration ..> PipelineExecutor
 PipelineExecutor "1"*--"1" Shell: contains
 PipelineExecutor "1"*--"1..*" Inlet: contains
 PipelineExecutor "1"*--"0..*" DataProcessor: contains
-PipelineExecutor "1"*--"1" ConfigProvider: contains
+PipelineExecutor "1"*--"1" PlantEyeConfiguration: contains
 
-Shell <|-- LocalShell
-LocalShell --|> TimeScheduler: uses
+Shell <|-- PeriodicalLocalShell
+PeriodicalLocalShell --|> TimeScheduler: uses
 Shell <|-- RestAPIShell
 RestAPIShell --|> RestAPIWebserver: uses
+
+Shell "1"--"1" ShellConfiguration : uses
 
 Inlet <|.. CameraInlet
 CameraInlet <|-- GenericCameraInlet
@@ -390,24 +394,24 @@ OPCUADataInlet --|> OPCUAClient: uses
 
 Inlet <|-- RestAPIInlet
 
-
-ConfigProvider <|-- FileConfigProvider
-ConfigProvider <|-- DictConfigProvider
-ConfigProvider -->"1" Configuration: provides
-
-Shell  "1"*--"1" ShellConfiguration: configures
-Inlet  "1"*--"1" InletConfiguration: configures
-
-Configuration <|.. GeneralConfiguration
-GeneralConfiguration <|-- ShellConfiguration
-GeneralConfiguration <|-- InletConfiguration
-GeneralConfiguration <|-- ProcessorConfiguration
+Configuration <|.. ComponentConfiguration
+Configuration <|.. PlantEyeConfiguration
+ComponentConfiguration <|-- ShellConfiguration
+ComponentConfiguration <|-- InletConfiguration
 InletConfiguration <|-- CameraConfiguration
 InletConfiguration <|-- StaticValueConfiguration
 InletConfiguration <|-- OPCUAValueConfiguration
 InletConfiguration <|-- RestAPIConfiguration
 ShellConfiguration <|-- RestAPIShellConfiguration
-ShellConfiguration <|-- LocalShellConfiguration
+ShellConfiguration <|-- PeriodicalLocalShellConfiguration
+ComponentConfiguration <|-- ProcessorConfiguration
+ProcessorConfiguration <|-- TFModelInferenceProcessorConfiguration
+ProcessorConfiguration <|-- ImageResizeProcessorConfiguration
+ProcessorConfiguration <|-- ImageCropProcessorConfiguration
+ProcessorConfiguration <|-- ColorConversionProcessorConfiguration
+ProcessorConfiguration <|-- InputProcessorConfiguration
+ProcessorConfiguration <|-- SaveOnDiskProcessorConfiguration
+
 
 CameraInlet  "1"*--"1" CameraStatus: contains
 
@@ -426,10 +430,13 @@ DataChunkStatus <|-- ProcessorStatus
 
 MetadataChunk <|-- MetadataChunkData
 
-Inlet "1"--*"1..*" DataChunk : generates
+Inlet "1"--*"0..*" DataChunk : generates
+Inlet "1"--"1" InletConfiguration : uses
 
 DataProcessor <|-- NonConfigurableDataProcessor
 DataProcessor <|-- ConfigurableDataProcessor
+
+DataProcessor "1"--"1" ProcessorConfiguration : uses
 
 NonConfigurableDataProcessor <|-- EncodeImageChunksToBase64
 NonConfigurableDataProcessor <|-- ChunksToDict

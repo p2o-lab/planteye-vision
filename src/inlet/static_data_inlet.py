@@ -3,7 +3,6 @@ from src.configuration.inlet_configuration import StaticValueConfiguration
 from src.data_chunks.data_chunk import GeneralDataChunk
 from src.data_chunks.data_chunk_data import DataChunkValue
 from src.data_chunks.metadata_chunk import MetadataChunkData
-from src.configuration.config_provider import ConfigProvider
 
 
 class StaticDataInlet(Inlet):

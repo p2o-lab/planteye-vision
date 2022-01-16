@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from src.configuration.config_provider import ConfigProvider
 import time
 import logging
 

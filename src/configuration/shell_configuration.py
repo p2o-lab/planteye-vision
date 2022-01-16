@@ -1,4 +1,3 @@
-from src.configuration.config_provider import ConfigProvider
 from src.configuration.configuration import ComponentConfiguration
 
 

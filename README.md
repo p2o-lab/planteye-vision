@@ -1,6 +1,6 @@
 # PlantEye/Vision
 
-PlantEye/Vision is a tool for data collection.\
+PlantEye/Vision is a tool for data collection and processing.\
 Shortly, PlantEye/Vision requests data from different data sources (data inlets) that are given in the configuration file.\
 If any processor specified, then additional processed data will be generated.\
 Afterwards, the aggregated data are provided via a defined interface (shell). It might be a RESTAPI interface or local storage, wherein the data will be saved as files.
@@ -15,48 +15,42 @@ python main.py
 Create a config file according to the following structure:
 ```yaml
 ---
+---
 inlets:
-  camera:
+  1:
+    name: camera
     type: local_camera_cv2 #baumer_camera_neoapi
-    access:
-      device_id: 0
+    hidden: False
     parameters:
+      device_id: 0
       Width: 720
       ExposureTime: 720
     metadata:
       '010F': Raspberry Pi # Manufacturer of recording equipment
-      '0110': HQ Camera v1.1 # The model name or model number of the equipment
-      'A432': 6mm f/1.2 # Lens specification.
-      'A433': RPIZ # Lens manufacturer.
-      'A434': PT361060M3MP12 # Lens model.
-      '013B': P2O-Lab # This tag records the name of the camera owner, photographer or image creator.
-      '0131': PlantEye/Vision, 1.0.0 # This tag records the name and version of the software.
-      '9208': Vessel light, 2.5 W # The kind of light source.
-      '9206': undefined # The distance to the subject, given in meters.
-      '0140': undefined  # A color map for palette color images.
-      '0112': 1 # The image orientation
-      '829D': 1.2 # The F number.
-      '8827': 100 # This tag indicates the ISO speed value of a camera or input device that is defined in ISO 12232.
-      '9201': 1/8000 # Shutter speed.
-      '9202': 1.2 # The lens aperture.
-      '920A': 6 # The actual focal length of the lens, in mm.
-  light_conditions:
+  2:
+    name: light_conditions
     type: static_variable
-    value: natural
+    hidden: False
+    parameters:
+      value: natural
     metadata:
       unit: none
       interpretation: no artificial light switched on
       description: light conditions during experiment
-  flow_regime:
+  3:
+    name: flow_regime
     type: static_variable
-    value: 0
+    hidden: False
+    parameters:
+      value: 0
     metadata:
       unit: none
       interpretation: flooded
       description: flow regime in reactor
-  stirrer_rotational_speed:
+  4:
+    name: stirrer_rotational_speed
     type: opcua_variable
-    access:
+    parameters:
       server: 'opc.tcp://opcuademo.sterfive.com:26543'
       username:
       password:
@@ -67,41 +61,42 @@ inlets:
       interpretation: none
       description: a selected opcua variable
 processors:
-  input:
+  0:
+    name: image_input
     type: input
     input_inlets:
       - camera
-  resize:
+  1:
+    name: resize
     type: image_resize
+    hidden: True
     parameters:
       width: 250
       height: 250
       interpolation: INTER_NEAREST
-  crop:
+  2:
+    name: crop
     type: image_crop
+    hidden: True
     parameters:
       x_init: 2
       x_diff: 248
       y_init: 2
       y_diff: 248
-  color_to_grayscale:
-    type: color_conversion
-    parameters:
-      conversion: BGR2GRAY
-  inference:
+  3:
+    name: inference
     type: tf_inference
-    access:
+    hidden: False
+    parameters:
       path_to_models: '../res/models/'
       model_name: 'dogs_vs_cats'
       model_version: '1.0'
 shell:
-  rest_api:
-    type: rest_api
-    access:
-      host: 0.0.0.0
-      port: 5000
-      name: 'PlantEye-Vision'
-      endpoint: '/get_frame'
+  type: rest_api
+  parameters:
+    host: 0.0.0.0
+    port: 5000
+    endpoint: '/get_frame'
 ```
 Further metadata, tags and labels can be added.
 Some example configurations can be found in ../res/
@@ -132,7 +127,10 @@ In this case the opcua node will be requested via a poll request and its value w
 Processors are design to execute short pipelines that include data preprocessing and model inference.
 Please consider that each processor except input generates a data/status/metadata chunk that will be a part of the data saved locally or provided via Rest API.
 #### input
-Input processor is neccesary for link further processor steps with a selected inlet.
+Input processor is necessary to link further processor steps with a selected inlet.
+Input inlet as parameters might contain one or more inputs.
+But only compatible ones will be processed with processors.
+Incompatible ones will be passed further unchanged.
 #### image_resize
 Resize processes is made to resize images.
 #### image_crop
@@ -141,11 +139,12 @@ Resize processes crops images.
 Convert color map of the image, as parameter it requires conversion type as in the opencv function cv2.cvtColor().
 #### tf_inference
 This processor uses a specified tensorflow model to run inference.
+#### save_on_disk
+This process saves results on disk.
 
 ### Supported shell types
-#### local
-This shell type requests data from data inlets according to a given regular time basis.
-The data will be stored on the local disk as a pair of files: image_file (if any camera inlet is specified) and json file.
+#### periodical_local
+This shell type requests data from data inlets and processes them according to a given regular time basis.
 
 #### rest_api
 This shell type starts a RestAPI endpoint that provides data in the form of a json response. Data from camera inlets are encoded as base64.
@@ -165,25 +164,39 @@ Response example:
 ```json
 {
    "camera":{
-      "inlet_type":"local_camera_cv2",
-      "inlet_name":"camera",
-      "inlet_access_data":{
-         "device_id":0
+      "type":"local_camera_cv2",
+      "name":"camera",
+      "parameters":{
+         "device_id":2,
+         "Width":720,
+         "ExposureTime":720
       },
       "data":{
-         "frame": frame_encoded_as_base64
+         "name":"frame",
+         "value":"frame encoded as base64",
+         "type":"base64_png"
       },
       "metadata":{
-         "timestamp":1637942511818,
-         "colormap":"BGR",
-         "shape":[
-            480,
-            640,
-            3
-         ],
-         "010F":"Raspberry Pi",
-         "0110":"HQ Camera v1.1",
-         "A432":"6mm f/1.2",
+         "timestamp":{
+            "parameter":"timestamp",
+            "value":1642344407561
+         },
+         "colormap":{
+            "parameter":"colormap",
+            "value":"BGR"
+         },
+         "shape":{
+            "parameter":"shape",
+            "value":[
+               480,
+               640,
+               3
+            ]
+         },
+         "010F": {
+           "parameter": "010F",
+           "value": "Raspberry Pi"
+         }
       },
       "status":{
          "Frame capturing":{
@@ -193,45 +206,175 @@ Response example:
       }
    },
    "light_conditions":{
-      "inlet_type":"static_variable",
-      "inlet_name":"light_conditions",
-      "inlet_access_data":{
-         
+      "type":"static_variable",
+      "name":"light_conditions",
+      "parameters":{
+         "value":"natural"
       },
       "data":{
-         "light_conditions":"natural"
+         "name":"static_value",
+         "value":"natural",
+         "data_type":"diverse"
       },
       "metadata":{
-         "unit":"none",
-         "interpretation":"no artificial light switched on",
-         "description":"light conditions during experiment"
+         "unit":{
+            "parameter":"unit",
+            "value":"none"
+         },
+         "interpretation":{
+            "parameter":"interpretation",
+            "value":"no artificial light switched on"
+         },
+         "description":{
+            "parameter":"description",
+            "value":"light conditions during experiment"
+         }
       },
       "status":{
          
       }
    },
    "flow_regime":{
-      "inlet_type":"static_variable",
-      "inlet_name":"flow_regime",
-      "inlet_access_data":{
-         
+      "type":"static_variable",
+      "name":"flow_regime",
+      "parameters":{
+         "value":0
       },
       "data":{
-         "flow_regime":0
+         "name":"static_value",
+         "value":0,
+         "data_type":"diverse"
       },
       "metadata":{
-         "unit":"none",
-         "interpretation":"flooded",
-         "description":"flow regime in reactor"
+         "unit":{
+            "parameter":"unit",
+            "value":"none"
+         },
+         "interpretation":{
+            "parameter":"interpretation",
+            "value":"flooded"
+         },
+         "description":{
+            "parameter":"description",
+            "value":"flow regime in reactor"
+         }
       },
       "status":{
          
+      }
+   },
+   "stirrer_rotational_speed":{
+      "type":"opcua_variable",
+      "name":"stirrer_rotational_speed",
+      "parameters":{
+         "server":"opc.tcp://opcuademo.sterfive.com:26543",
+         "username":null,
+         "password":null,
+         "node_ns":8,
+         "node_id":"Scalar_Simulation_Float"
+      },
+      "data":{
+         "name":"opcua_value",
+         "value":-782.3922729492188,
+         "data_type":"diverse"
+      },
+      "metadata":{
+         "unit":{
+            "parameter":"unit",
+            "value":"none"
+         },
+         "interpretation":{
+            "parameter":"interpretation",
+            "value":"none"
+         },
+         "description":{
+            "parameter":"description",
+            "value":"a selected opcua variable"
+         }
+      },
+      "status":{
+         "Reading process value over OPC UA":{
+            "code":0,
+            "message":"Process value read"
+         }
+      }
+   },
+   "camera_resize":{
+      "type":"image_resize",
+      "name":"camera_resize",
+      "parameters":{
+         "width":250,
+         "height":250,
+         "interpolation":"INTER_NEAREST"
+      },
+      "data":{
+         "name":"frame",
+         "value":"frame encoded as base64",
+         "type":"image"
+      },
+      "metadata":{
+         
+      },
+      "status":{
+         "Processor":{
+            "code":0,
+            "message":"Processing value successful"
+         }
+      }
+   },
+   "camera_resize_crop":{
+      "type":"image_crop",
+      "name":"camera_resize_crop",
+      "parameters":{
+         "x_init":2,
+         "x_diff":248,
+         "y_init":2,
+         "y_diff":248
+      },
+      "data":{
+         "name":"frame",
+         "value":"frame encoded as base64",
+         "type":"image"
+      },
+      "metadata":{
+         
+      },
+      "status":{
+         "Processor":{
+            "code":0,
+            "message":"Processing value successful"
+         }
+      }
+   },
+   "inference":{
+      "type":"tf_inference",
+      "name":"inference",
+      "parameters":{
+         "path_to_models":"../res/models/",
+         "model_name":"dogs_vs_cats",
+         "model_version":"1.0"
+      },
+      "data":{
+         "name":"inference_result",
+         "value":[
+            1.0
+         ],
+         "data_type":"diverse"
+      },
+      "metadata":{
+         
+      },
+      "status":{
+         "Processor":{
+            "code":0,
+            "message":"Processing value successful"
+         }
       }
    }
 }
 ```
 The response consists of a list of so-called data chunks (e.g. "camera", "light_conditions" and "flow_regimes").
-Data chunks have the same inner structure consisting of inlet_type, inlet_name, inlet_access_data, data, metadata and status.
+Data chunks have the same inner structure consisting of type, name, parameters, data, metadata and status.
 
 ### Inlet type
 inlet_type defines the type of the data inlet.

@@ -4,7 +4,6 @@ import threading
 
 from src.shell.shell import Shell
 from src.configuration.shell_configuration import RestAPIShellConfiguration
-from src.configuration.config_provider import ConfigProvider, DictConfigProvider
 
 
 class RestAPIShell(Shell):

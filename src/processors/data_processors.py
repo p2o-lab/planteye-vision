@@ -1,5 +1,4 @@
 from src.data_chunks.data_chunk_data import DataChunkImage
-from src.configuration.config_provider import ConfigProvider
 from src.processors.data_processor import NonConfigurableDataProcessor, ConfigurableDataProcessor
 from src.configuration.processor_configuration import *
 import logging
@@ -261,7 +260,6 @@ class TFModelInference(ConfigurableDataProcessor):
         batched_image_np = tf.expand_dims(image_np, axis=0)
         try:
             value = self.tf_model.predict(batched_image_np).flatten().tolist()
-            print(value)
             status = ProcessorStatus(0)
             data_type = 'diverse'
             data_chunk.add_status(status)

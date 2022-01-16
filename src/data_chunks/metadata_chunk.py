@@ -13,4 +13,4 @@ class MetadataChunkData(MetadataChunk):
         self.value = value
 
     def as_dict(self):
-        return {self.name: self.value}
+        return {self.name: {'parameter': self.name, 'value': self.value}}
