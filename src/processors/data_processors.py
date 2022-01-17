@@ -97,7 +97,7 @@ class ImageResize(ConfigurableDataProcessor):
     def apply_processor(self, chunks: list):
         result_chunks = []
         for chunk in chunks:
-            if chunk.chunk_type in ['local_camera_cv2', 'image_resize', 'image_crop']:
+            if chunk.chunk_type in ['local_camera_cv2', 'baumer_camera_neoapi', 'image_resize', 'image_crop']:
                 new_name = chunk.name + '_' + self.name
                 data_chunk = GeneralDataChunk(new_name, self.type, self.config.parameters, hidden=self.config.hidden)
                 if not self.config.is_valid():
@@ -151,7 +151,7 @@ class ImageCrop(ConfigurableDataProcessor):
     def apply_processor(self, chunks):
         result_chunks = []
         for chunk in chunks:
-            if chunk.chunk_type in ['local_camera_cv2', 'image_resize', 'image_crop']:
+            if chunk.chunk_type in ['local_camera_cv2', 'baumer_camera_neoapi', 'image_resize', 'image_crop']:
                 new_name = chunk.name + '_' + self.name
                 data_chunk = GeneralDataChunk(new_name, self.type, self.config.parameters, hidden=self.config.hidden)
                 if not self.config.is_valid():
@@ -198,7 +198,7 @@ class ImageColorConversion(ConfigurableDataProcessor):
     def apply_processor(self, chunks):
         result_chunks = []
         for chunk in chunks:
-            if chunk.chunk_type in ['local_camera_cv2', 'image_resize', 'image_crop']:
+            if chunk.chunk_type in ['local_camera_cv2', 'baumer_camera_neoapi', 'image_resize', 'image_crop']:
                 new_name = chunk.name + '_' + self.name
                 data_chunk = GeneralDataChunk(new_name, self.type, self.config.parameters, hidden=self.config.hidden)
                 if not self.config.is_valid():
@@ -300,7 +300,7 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
                 continue
             chunk_dict = chunk.as_dict()
 
-            if chunk.chunk_type in ['local_camera_cv2', 'image_resize', 'image_crop', 'color_conversion']:
+            if chunk.chunk_type in ['local_camera_cv2', 'baumer_camera_neoapi', 'image_resize', 'image_crop', 'color_conversion']:
                 chunk_dict.pop('data')
                 for image in chunk.data:
                     if isinstance(image, DataChunkImage):

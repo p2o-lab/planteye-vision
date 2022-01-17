@@ -92,7 +92,7 @@ class PlantEyeConfiguration(Configuration):
                     inlet_cfg = StaticValueConfiguration()
                 elif inlet_cfg_dict['type'] == 'opcua_variable':
                     inlet_cfg = OPCUAValueConfiguration()
-                elif inlet_cfg_dict['type'] in ['local_camera_cv2', 'baumer_camera_neo']:
+                elif inlet_cfg_dict['type'] in ['local_camera_cv2', 'baumer_camera_neoapi']:
                     inlet_cfg = CameraConfiguration()
                 else:
                     continue

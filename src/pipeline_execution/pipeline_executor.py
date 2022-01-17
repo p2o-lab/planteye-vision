@@ -1,4 +1,5 @@
 from src.inlet.generic_camera_inlet import GenericCameraInlet
+from src.inlet.baumer_camera_inlet import BaumerCameraInlet
 from src.inlet.static_data_inlet import StaticDataInlet
 from src.inlet.opcua_data_inlet import OPCUADataInlet
 from src.shell.rest_api_shell import RestAPIShell
@@ -58,6 +59,8 @@ class PipeLineExecutor:
         for inlet_config in inlet_configs:
             if inlet_config.type == 'local_camera_cv2':
                 inlet = GenericCameraInlet(inlet_config)
+            elif inlet_config.type == 'baumer_camera_neoapi':
+                inlet = BaumerCameraInlet(inlet_config)
             elif inlet_config.type == 'static_variable':
                 inlet = StaticDataInlet(inlet_config)
             elif inlet_config.type == 'opcua_variable':

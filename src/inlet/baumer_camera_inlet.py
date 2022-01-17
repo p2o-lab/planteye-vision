@@ -1,12 +1,6 @@
-import logging
-import numpy as np
 import neoapi
-from time import time, sleep
-
 import logging
 from time import sleep
-import cv2
-
 from src.inlet.camera_inlet import CameraInlet
 from src.common.timestamp import get_timestamp
 from src.data_chunks.data_chunk import GeneralDataChunk
@@ -14,11 +8,14 @@ from src.data_chunks.data_chunk_status import CapturingStatus
 from src.data_chunks.metadata_chunk import MetadataChunkData
 from src.data_chunks.data_chunk_data import DataChunkImage
 from src.configuration.inlet_configuration import CameraConfiguration
+import numpy as np
+
 
 GET_IMAGE_TIMEOUT = 1000
+DEBUG = False
 
 
-class NeoApiImageDataReceiver(CameraInlet):
+class BaumerCameraInlet(CameraInlet):
 
     def __init__(self, config: CameraConfiguration):
         super().__init__(config)
@@ -29,41 +26,50 @@ class NeoApiImageDataReceiver(CameraInlet):
             self.disconnect()
 
     def apply_configuration(self):
-        self.camera_object.SetSynchronFeatureMode(True)
+        if not DEBUG:
+            self.camera_object.SetSynchronFeatureMode(True)
         super().apply_configuration()
 
-    def set_parameter(self, feature: str, requested_value) -> bool:
+    def set_parameter(self, parameter: str, requested_value) -> bool:
         """
         Sets a single parameter of the Baumer camera.
-        :param feature: str: Feature name according to neoAPI documentation.
+        :param parameter: str: Feature name according to neoAPI documentation.
         List of available features and their description is to find in neoAPI and camera documentation.
         Please consider that not every capturing device supports all parameters.
         :param: requested_value: any type: Desired value of the feature
         :return: bool: True if the feature is set successfully, False - if not
         """
+        if DEBUG:
+            print('Set parameter %s to %s' % (parameter, requested_value))
+            return True
 
-        if not self.camera_object.HasFeature(feature):
-            logging.warning('Feature %s not detected' % feature)
+        if not self.camera_object.HasFeature(parameter):
+            logging.warning('Feature %s not detected' % parameter)
             return False
         else:
-            logging.info('Feature %s detected' % feature)
+            logging.info('Feature %s detected' % parameter)
 
-        if not self.camera_object.IsWritable(feature):
-            logging.warning('Feature %s not available' % feature)
+        if not self.camera_object.IsWritable(parameter):
+            logging.warning('Feature %s not available' % parameter)
             return False
         else:
-            logging.info('Feature %s writable' % feature)
+            logging.info('Feature %s writable' % parameter)
 
         try:
-            self.camera_object.SetFeature(feature, requested_value)
-            new_value = str(self.camera_object.GetFeature(feature))
-            logging.info('Feature %s set to %s' % (feature, new_value))
+            self.camera_object.SetFeature(parameter, requested_value)
+            new_value = str(self.camera_object.GetFeature(parameter))
+            logging.info('Feature %s set to %s' % (parameter, new_value))
             return True
         except neoapi.FeatureAccessException as exc:
-            logging.warning('Feature %s cannot be set to %s due to %s' % (feature, requested_value, exc))
+            logging.warning('Feature %s cannot be set to %s due to %s' % (parameter, requested_value, exc))
             return False
 
     def connect(self):
+        if DEBUG:
+            print('Connect')
+            self.camera_status.initialised = True
+            return True
+
         self.camera_object = neoapi.Cam()
         self.camera_status.initialised = False
         while not self.camera_object.IsConnected():
@@ -122,12 +128,18 @@ class NeoApiImageDataReceiver(CameraInlet):
             return [data_chunk]
 
         self.camera_status.capturing = True
-        frame_raw = self.camera_object.GetImage(GET_IMAGE_TIMEOUT)
-        self.camera_status.capturing = False
+        if DEBUG:
+            print('Connect')
+            self.camera_status.initialised = True
+            frame_raw = True
+            frame_np = np.random.rand(640, 480, 3)
+        else:
+            frame_raw = self.camera_object.GetImage(GET_IMAGE_TIMEOUT)
+            frame_shape = frame_raw.shape
+            frame_colormap = 'BGR'
+            frame_np = frame_raw.GetNPArray()
 
-        frame_shape = frame_raw.shape
-        frame_colormap = 'BGR'
-        frame_np = frame_raw.GetNPArray()
+        self.camera_status.capturing = False
 
         if frame_raw is not None:
             data_chunk.add_data(DataChunkImage('frame', frame_np, 'base64_png'))

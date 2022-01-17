@@ -31,7 +31,7 @@ class GenericCameraInlet(CameraInlet):
         """
         par = None
         try:
-            exec("par = cv2.%s" % parameter)
+            par = exec("cv2.%s" % parameter)
         except Exception:
             logging.warning('Parameter (' + parameter + ') is not found by name')
             return False
