@@ -1,0 +1,37 @@
+---
+inlets:
+  1:
+    name: restapi
+    type: restapi
+    hidden: False
+    parameters:
+      endpoint: http://127.0.0.1:5000/get_frame
+processors:
+  0:
+    name: image_input
+    type: input
+    input_inlets:
+      - restapi
+  1:
+    name: resize
+    type: image_resize
+    hidden: True
+    parameters:
+      width: 250
+      height: 250
+      interpolation: INTER_NEAREST
+  2:
+    name: crop
+    type: image_crop
+    hidden: False
+    parameters:
+      x_init: 2
+      x_diff: 248
+      y_init: 2
+      y_diff: 248
+shell:
+  type: rest_api
+  parameters:
+    host: 0.0.0.0
+    port: 5001
+    endpoint: '/get_frame'

@@ -17,7 +17,7 @@ class DataChunkValue(DataChunkData):
         self.data_type = data_type
 
     def as_dict(self):
-        return {'name': self.name, 'value': self.value, 'data_type': self.data_type}
+        return {'name': self.name, 'value': self.value, 'type': self.data_type}
 
 
 class DataChunkImage(DataChunkData):

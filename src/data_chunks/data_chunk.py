@@ -44,7 +44,7 @@ class GeneralDataChunk(DataChunk):
     def as_dict(self):
         data_dict = {}
         for data_chunk in self.data:
-            data_dict.update(data_chunk.as_dict())
+            data_dict.update({data_chunk.name: data_chunk.as_dict()})
 
         metadata_dict = {}
         for metadata_chunk in self.metadata:

@@ -94,6 +94,8 @@ class PlantEyeConfiguration(Configuration):
                     inlet_cfg = OPCUAValueConfiguration()
                 elif inlet_cfg_dict['type'] in ['local_camera_cv2', 'baumer_camera_neoapi']:
                     inlet_cfg = CameraConfiguration()
+                elif inlet_cfg_dict['type'] == 'restapi':
+                    inlet_cfg = RestAPIInletConfiguration()
                 else:
                     continue
                 inlet_cfg.read(inlet_cfg_dict)

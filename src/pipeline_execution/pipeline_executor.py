@@ -2,6 +2,7 @@ from src.inlet.generic_camera_inlet import GenericCameraInlet
 from src.inlet.baumer_camera_inlet import BaumerCameraInlet
 from src.inlet.static_data_inlet import StaticDataInlet
 from src.inlet.opcua_data_inlet import OPCUADataInlet
+from src.inlet.restapi_inlet import RestAPIDataInlet
 from src.shell.rest_api_shell import RestAPIShell
 from src.shell.periodical_local_shell import PeriodicalLocalShell
 from src.processors.data_processors import *
@@ -65,6 +66,8 @@ class PipeLineExecutor:
                 inlet = StaticDataInlet(inlet_config)
             elif inlet_config.type == 'opcua_variable':
                 inlet = OPCUADataInlet(inlet_config)
+            elif inlet_config.type == 'restapi':
+                inlet = RestAPIDataInlet(inlet_config)
             else:
                 logging.error('Unsupported inlet type %s' % inlet_config.type)
                 continue

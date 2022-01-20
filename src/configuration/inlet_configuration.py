@@ -60,3 +60,18 @@ class OPCUAValueConfiguration(InletConfiguration):
                 self.valid = False
         else:
             self.valid = False
+
+
+class RestAPIInletConfiguration(InletConfiguration):
+    def __init__(self):
+        super().__init__()
+
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'endpoint' in self.cfg_dict['parameters']:
+                self.parameters['endpoint'] = self.cfg_dict['parameters']['endpoint']
+            else:
+                self.valid = False
+        else:
+            self.valid = False
