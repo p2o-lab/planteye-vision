@@ -5,5 +5,5 @@ logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
 
-vision = LocalVision('../res/config.yaml')
+vision = LocalVision('../res/config_baumer_restapi_opcua.yaml')
 vision.run()
