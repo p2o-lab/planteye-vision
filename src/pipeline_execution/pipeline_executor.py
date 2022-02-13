@@ -151,6 +151,7 @@ class PipeLineExecutor:
         processor_results = []
 
         for processor in self.processors:
+
             if isinstance(processor, InputProcessor):
                 processing_result = processor.execute(processing_result)
                 if len(processing_result) == 0:
@@ -158,10 +159,9 @@ class PipeLineExecutor:
                     break
                 continue
 
-            if isinstance(processor, SaveOnDiskProcessor):
-                cleaned_processors_result = self.remove_duplicates(processing_result)
-                combined_result = data_chunks + cleaned_processors_result
-                processor.execute(combined_result)
+            elif isinstance(processor, SaveOnDiskProcessor):
+                results_to_save = self.remove_duplicates(data_chunks+processor_results)
+                processor.execute(results_to_save)
                 continue
 
             processing_result = processor.execute(processing_result)

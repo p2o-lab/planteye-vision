@@ -26,19 +26,6 @@ processors:
     type: input
     input_inlets:
       - all
-  1:
-    name: resize
-    type: image_resize
-    hidden: False
-    parameters:
-      width: 250
-      height: 250
-      interpolation: INTER_NEAREST
-  2:
-    name: saver
-    type: save_on_disk
-    parameters:
-      save_path: '../data'
 shell:
   type: rest_api
   parameters:
