@@ -66,10 +66,13 @@ class InputProcessor(ConfigurableDataProcessor):
             logging.warning('Processor ' + self.name + ' (' + self.type + '): no execution, invalid configuration')
             return None
 
-        for inlet in self.input_inlets:
-            for chunk in chunks:
-                if chunk.name == inlet:
-                    output_data.append(chunk)
+        if self.input_inlets == 'all':
+            [output_data.append(chunk) for chunk in chunks]
+        else:
+            for inlet in self.input_inlets:
+                for chunk in chunks:
+                    if chunk.name == inlet:
+                        output_data.append(chunk)
 
         logging.info('Processor ' + self.name + ' (' + self.type + '): execution successful')
         return output_data

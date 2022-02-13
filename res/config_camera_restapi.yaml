@@ -50,7 +50,7 @@ processors:
     name: image_input
     type: input
     input_inlets:
-      - camera
+      - all
   1:
     name: resize
     type: image_resize
