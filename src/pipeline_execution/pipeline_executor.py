@@ -74,6 +74,7 @@ class PipeLineExecutor:
                 continue
             inlet.apply_configuration()
             inlets_obj.append(inlet)
+            logging.info(f'Inlet: Name {inlet_config.name}, Type {inlet_config.type} added')
 
         self.inlets = inlets_obj
         logging.info('Inlets configured')
@@ -103,6 +104,7 @@ class PipeLineExecutor:
                 processor.apply_configuration()
 
             processors_obj.append(processor)
+            logging.info(f'Processor: Name {processor.name}, Type {processor.type} added')
 
         self.processors = processors_obj
         logging.info('Processors configured')
@@ -157,7 +159,9 @@ class PipeLineExecutor:
                 continue
 
             if isinstance(processor, SaveOnDiskProcessor):
-                processor.execute(data_chunks)
+                cleaned_processors_result = self.remove_duplicates(processing_result)
+                combined_result = data_chunks + cleaned_processors_result
+                processor.execute(combined_result)
                 continue
 
             processing_result = processor.execute(processing_result)

@@ -6,5 +6,6 @@ logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%
 
 
 #vision = LocalVision('../res/config_baumer_restapi_opcua.yaml')
-vision = LocalVision('../res/config_camera_restapi.yaml')
+#vision = LocalVision('../res/config_camera_restapi.yaml')
+vision = LocalVision('../res/config_minimal_restapi.yaml')
 vision.run()

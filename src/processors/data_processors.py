@@ -66,7 +66,7 @@ class InputProcessor(ConfigurableDataProcessor):
             logging.warning('Processor ' + self.name + ' (' + self.type + '): no execution, invalid configuration')
             return None
 
-        if self.input_inlets == 'all':
+        if self.input_inlets == ['all']:
             [output_data.append(chunk) for chunk in chunks]
         else:
             for inlet in self.input_inlets:
@@ -321,6 +321,7 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
                 json.dump(json_dict, json_file, indent=4)
 
         logging.info('Processor ' + self.name + ' (' + self.type + '): execution successful')
+        return data_chunks
 
     def execute(self, input_data):
         return super().execute(input_data)
