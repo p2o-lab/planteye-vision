@@ -1,4 +1,4 @@
-from flask import Flask, request, Response
+from flask import Flask, request, jsonify
 import logging
 import threading
 
@@ -17,6 +17,7 @@ class RestAPIShell(Shell):
         self.webserver = None
         self.webserver_thread = None
         self.response_callback = None
+        self.planteye_config = None
 
     def apply_configuration(self):
         host = self.config.parameters['host']
@@ -27,8 +28,12 @@ class RestAPIShell(Shell):
         endpoint_name = 'PlantEye REST API Shell'
         self.webserver.add_url_rule(endpoint, endpoint_name, self.response_callback, ['GET'])
         self.webserver.add_url_rule('/upload_config', 'configuration update', self.upload_configuration_callback, ['POST'])
+        self.webserver.add_url_rule('/get_config', 'configuration', self.download_configuration_callback, ['GET'])
         self.webserver.add_url_rule('/', 'homepage', self.homepage_callback, ['GET'])
         self.connect()
+
+    def attach_planteye_configuration(self, config: PlantEyeConfiguration):
+        self.planteye_config = config
 
     def attach_callback(self, callback: callable):
         self.response_callback = callback
@@ -36,6 +41,9 @@ class RestAPIShell(Shell):
     def homepage_callback(self):
         welcome_str = 'Welcome to PlantEye API. Available endpoint is %s' % self.config.parameters['endpoint']
         return welcome_str
+
+    def download_configuration_callback(self):
+        return jsonify(self.planteye_config.cfg_dict)
 
     def upload_configuration_callback(self):
         if not hasattr(self, 'pipeline_executor'):

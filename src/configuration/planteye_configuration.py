@@ -50,6 +50,7 @@ class PlantEyeConfiguration(Configuration):
 
     def update(self, cfg_dict):
         self.ongoing_config = True
+        self.cfg_dict = cfg_dict
         if 'inlets' in cfg_dict.keys():
             if len(cfg_dict['inlets']) > 0:
                 inlets_cfg_list = list(cfg_dict['inlets'].values())

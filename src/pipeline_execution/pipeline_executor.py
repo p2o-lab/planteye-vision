@@ -44,6 +44,7 @@ class PipeLineExecutor:
             self.shell = PeriodicalLocalShell(shell_config)
         elif shell_config.type == 'rest_api':
             self.shell = RestAPIShell(shell_config)
+            self.shell.attach_planteye_configuration(self.config)
             self.shell.enable_configuration_update_via_restapi(self)
         else:
             self.shell = None

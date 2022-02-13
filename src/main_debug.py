@@ -8,5 +8,5 @@ logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%
 vision1 = LocalVision('../res/config_camera_restapi.yaml')
 vision1.run()
 
-vision2 = LocalVision('../res/config_restapi_to_restapi.yaml')
-vision2.run()
+#vision2 = LocalVision('../res/config_restapi_to_restapi.yaml')
+#vision2.run()
