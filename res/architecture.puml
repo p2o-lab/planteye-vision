@@ -1,0 +1,449 @@
+@startuml
+skinparam linetype polyline
+
+interface Vision{
++run(): void
+}
+
+class PlantEyeConfiguration{
++type: str
++name: str
++shell: ShellConfiguration
++inlets: list of InletConfiguration
++processors: list of ProcessorConfiguration
++cfg_dict: dict
++configured_once: bool
++valid_structure: bool
++ongoing_config: bool
++read(cfg_dict: dict): void
+-_read_shell_config(shell_cfg_dict: dict): void
+-_read_inlet_configs(inlets_cfg_list: list of dicts): void
+-_read_processor_configs(processors_cfg_list: list of dicts): void
++is_valid(): bool
+-_components_are_valid(): bool
++get_shell_config(): ShellConfiguration
++get_inlet_configs(): list of InletConfiguration
++get_processor_configs(): list of ProcessorConfiguration
+
+}
+
+class PipelineExecutor {
++config: PlantEyeConfiguration
++shell: Shell
++inlets: list
++processors: list
++cfg_update_flag: bool
++apply_configuration(): void
++update_configuration(): void
++configure_shell(): void
++configure_inlets(): void
++configure_processors(): void
++single_execution(): list
++inlets_execute(): list of DataChunk
++processors_execute(data_chunks: list of DataChunk): list of DataChunk
++remove_duplicates(data_chunks: list of DataChunk): list of DataChunk
++run():run
+}
+
+interface Shell{
++apply_configuration(): void
++attach_callback(callback: callable): void
+}
+
+
+class PeriodicalLocalShell{
++config: PeriodicalLocalShellConfiguration
++time_scheduler: TimeScheduler
++callback: callable
++execution_step(): void
+}
+
+class TimeScheduler{
++time_interval: float
++executed_function: callable
++thread: threading.Thread()
++stop_flag: bool
++start(): void
++stop(): void
++executable(): void
+}
+
+
+class RestAPIShell{
++config: RestAPIConfiguration
++webserver: RestAPIWebserver
++webserver_thread: threading.Thread()
++response_callback: callable
++pipeline_executor: callable
++homepage_callback(callback: callable): void
++upload_configuration_callback(): void
++enable_configuration_update_via_restapi(pipeline_executor: callable): void
++connect(): void
++disconnect(): void
+}
+
+class RestAPIWebserver{
++name: str
++host: str
++port: int
++endpoint_flask_app:flask.Flask(name:str)
++add_url_rule(endpoint: str, name: str, rule: callable)
++stop_flag: bool
+}
+
+interface Inlet{
++import_configuration(config_provider: ConfigProvider)
++apply_configuration(): void
++retrieve_data(): void
+}
+
+abstract class CameraInlet{
++config:CameraConfiguration
++name: str
++type: str
++camera_object: object
++camera_status: CameraStatus
++set_parameter(parameter: str, value: int, float, str, bool): void
++connect(): void
++disconnect(): void
+}
+
+class GenericCameraInlet{
++config:CameraConfiguration
++name: str
++type: str
++camera_object: object
++camera_status: CameraStatus
++set_parameter(parameter: str, value: int, float, str, bool): void
++connect(): void
++disconnect(): void
++get_camera_info(): void
+}
+
+class NeoApiCameraInlet{
++config:CameraConfiguration
++name: str
++type: str
++camera_object: object
++camera_status: CameraStatus
++set_parameter(parameter: str, value: int, float, str, bool): void
++connect(): void
++disconnect(): void
++get_camera_info(): void
+}
+
+class StaticDataInlet{
++config:StaticValueConfiguration
++name: str
++type: str
+}
+
+class OPCUADataInlet{
++config:OPCUAValueConfiguration
++name: str
++type: str
++opcua_client: OPCUAClient
++poll_node() : void
++get_opcua_server_info(): void
+}
+
+class OPCUAClient{
+server: str
+username: str
+password: str
+client: opcua.Client
+connection_status: bool
+connectivity_thread: threading.Thread
+reconnect_interval: float
+connect_once: bool
+stop_flag: bool
+stopped: bool
++connect(): void
++disconnect(): void
+-__single_connect(): void
+-__connectivity_routine(): void
++check_connection(): void
++get_connection_status(): bool
++get_url(): str
++get_server_obj(): opcua.Client
+}
+
+class RestAPIInlet
+{
++config:OPCUAValueConfiguration
++name: str
++type: str
++get_rest_api_info(): void
+}
+note top: not implemented yet
+
+
+interface Configuration{
++read(cfg_dict: dict): void
+}
+
+abstract class ComponentConfiguration{
++name: str
++type: str
++hidden: bool
++parameters: list
++metadata: dict
++cfg_dict: dict
++valid: bool
++is_valid(): bool
+}
+
+
+class ShellConfiguration{
+}
+
+class RestAPIShellConfiguration{
+}
+
+class PeriodicalLocalShellConfiguration{
++storage_path: str
++time_interval: float
+}
+
+class InletConfiguration{
+}
+
+class CameraConfiguration{
+}
+
+class StaticValueConfiguration{
+}
+
+class OPCUAValueConfiguration{
+}
+
+class RestAPIConfiguration{
+}
+note top: not implemented yet
+
+class ProcessorConfiguration{
++seq_id: int
+}
+
+class TFModelInferenceProcessorConfiguration{
+}
+
+class ImageResizeProcessorConfiguration{
+}
+
+class ImageCropProcessorConfiguration{
+}
+
+class ColorConversionProcessorConfiguration{
+}
+
+class InputProcessorConfiguration{
+}
+
+class SaveOnDiskProcessorConfiguration{
+}
+
+class CameraStatus{
++initialised: bool
++configured: bool
++fully_configured: bool
++connected: bool
++capturing: bool
++as_dict(): dict
+}
+
+interface DataChunk{
++add_data(data: DataChunkData): void
++add_metadata(metadata: MetadataChunk): void
++add_status(status: DataChunkStatus): void
++as_dict(): dict
+}
+
+class GeneralDataChunk{
++name: str
++chunk_type: str
++hidden: bool
++parameters: dict
++data: list
++metadata: list
++status: list
+}
+
+
+abstract class DataChunkData{
++as_dict(): dict
+}
+
+class DataChunkValue{
++name: str
++value: str, int, float, bool
++data_type: str
+}
+
+class DataChunkImage{
++name: str
++value: np.ndarray, str
++data_type: str
++encode_as_base64(): void
++base64_decoder(frame:str): np.ndarray
+}
+
+
+abstract class DataChunkStatus{
++as_dict(): dict
+}
+
+class CapturingStatus{
++operation: str
++code: int
++message: str
++infer_message(): void
++as_dict(): dict
++get_message(): str
+}
+
+class ProcessorStatus{
++operation: str
++code: int
++message: str
++infer_message(): void
++as_dict(): dict
++get_message(): str
+}
+
+class OPCUAReadStatus{
++operation: str
++code: int
++message: str
++infer_message(): void
++as_dict(): dict
++get_message(): str
+}
+
+
+abstract class MetadataChunk{
++as_dict: dict
+}
+
+class MetadataChunkData{
++name: str
++value: str, int, float, bool
+}
+
+interface DataProcessor{
++apply_processor(input_data): void
+}
+
+interface NonConfigurableDataProcessor{
++apply_processor(input_data): void
+}
+
+interface ConfigurableDataProcessor{
++import_configuration(config_provider: ConfigProvider)
++apply_configuration(): void
++apply_processor(input_data): void
+}
+
+class TFModelInference{
+}
+
+class ImageResize{
+}
+
+class ImageCrop{
+}
+
+class ImageColorConversion{
+}
+
+class InputProcessor{
+}
+
+class EncodeImageChunksToBase64{
++apply_processor(chunks: list): void
+}
+
+class ChunksToDict{
++apply_processor(chunks: list): dict
+}
+
+Vision <|-- VisionLocalConfiguration
+Vision <|-- VisionOnlineConfiguration
+VisionLocalConfiguration ..> PipelineExecutor
+VisionOnlineConfiguration ..> PipelineExecutor
+
+PipelineExecutor "1"*--"1" Shell: contains
+PipelineExecutor "1"*--"1..*" Inlet: contains
+PipelineExecutor "1"*--"0..*" DataProcessor: contains
+PipelineExecutor "1"*--"1" PlantEyeConfiguration: contains
+
+Shell <|-- PeriodicalLocalShell
+PeriodicalLocalShell --|> TimeScheduler: uses
+Shell <|-- RestAPIShell
+RestAPIShell --|> RestAPIWebserver: uses
+
+Shell "1"--"1" ShellConfiguration : uses
+
+Inlet <|.. CameraInlet
+CameraInlet <|-- GenericCameraInlet
+CameraInlet <|-- NeoApiCameraInlet
+
+Inlet <|-- StaticDataInlet
+Inlet <|-- OPCUADataInlet
+OPCUADataInlet --|> OPCUAClient: uses
+
+Inlet <|-- RestAPIInlet
+
+Configuration <|.. ComponentConfiguration
+Configuration <|.. PlantEyeConfiguration
+ComponentConfiguration <|-- ShellConfiguration
+ComponentConfiguration <|-- InletConfiguration
+InletConfiguration <|-- CameraConfiguration
+InletConfiguration <|-- StaticValueConfiguration
+InletConfiguration <|-- OPCUAValueConfiguration
+InletConfiguration <|-- RestAPIConfiguration
+ShellConfiguration <|-- RestAPIShellConfiguration
+ShellConfiguration <|-- PeriodicalLocalShellConfiguration
+ComponentConfiguration <|-- ProcessorConfiguration
+ProcessorConfiguration <|-- TFModelInferenceProcessorConfiguration
+ProcessorConfiguration <|-- ImageResizeProcessorConfiguration
+ProcessorConfiguration <|-- ImageCropProcessorConfiguration
+ProcessorConfiguration <|-- ColorConversionProcessorConfiguration
+ProcessorConfiguration <|-- InputProcessorConfiguration
+ProcessorConfiguration <|-- SaveOnDiskProcessorConfiguration
+
+
+CameraInlet  "1"*--"1" CameraStatus: contains
+
+DataChunk <|.. GeneralDataChunk
+
+GeneralDataChunk "1"*--"1" DataChunkData: contains
+GeneralDataChunk "1"*--"1" DataChunkStatus: contains
+GeneralDataChunk "1"*--"1" MetadataChunk: contains
+
+DataChunkData <|-- DataChunkValue
+DataChunkData <|-- DataChunkImage
+
+DataChunkStatus <|-- CapturingStatus
+DataChunkStatus <|-- OPCUAReadStatus
+DataChunkStatus <|-- ProcessorStatus
+
+MetadataChunk <|-- MetadataChunkData
+
+Inlet "1"--*"0..*" DataChunk : generates
+Inlet "1"--"1" InletConfiguration : uses
+
+DataProcessor <|-- NonConfigurableDataProcessor
+DataProcessor <|-- ConfigurableDataProcessor
+
+DataProcessor "1"--"1" ProcessorConfiguration : uses
+
+NonConfigurableDataProcessor <|-- EncodeImageChunksToBase64
+NonConfigurableDataProcessor <|-- ChunksToDict
+ConfigurableDataProcessor <|-- TFModelInference
+ConfigurableDataProcessor <|-- ImageResize
+ConfigurableDataProcessor <|-- ImageCrop
+ConfigurableDataProcessor <|-- ImageColorConversion
+ConfigurableDataProcessor <|-- InputProcessor
+
+@enduml
