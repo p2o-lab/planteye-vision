@@ -1,0 +1,34 @@
+---
+inlets:
+  1:
+    name: camera
+    type: local_camera_cv2
+    hidden: False
+    parameters:
+      device_id: 1
+      Width: 720
+      ExposureTime: 720
+    metadata:
+      '010F': Raspberry Pi # Manufacturer of recording equipment
+  2:
+    name: light_conditions
+    type: static_variable
+    hidden: False
+    parameters:
+      value: natural
+    metadata:
+      unit: none
+      interpretation: no artificial light switched on
+      description: light conditions during experiment
+processors:
+  0:
+    name: image_input
+    type: input
+    input_inlets:
+      - all
+shell:
+  type: rest_api
+  parameters:
+    host: 0.0.0.0
+    port: 5000
+    endpoint: '/get_frame'

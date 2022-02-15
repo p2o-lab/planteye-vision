@@ -1,20 +1,41 @@
-# PlantEye
+# PlantEye-Vision
 
-PlantEye is a tool for building complex distributed pipelines in the field of data science and in particular machine learning.\
-Shortly, PlantEye requests data from different data sources (data inlets) that are given in the configuration file.\
+PlantEye-Vision is a tool for building complex distributed pipelines in the field of data science and in particular machine learning.\
+Shortly, PlantEye-Vision requests data from different data sources (data inlets) that are given in the configuration file.\
 If any processor specified, they will be applied on data retrieved from the data inlets.\
 After execution of the processors, their resulted data will be combined with data provided by the inlets. It will form the result body.\
 Depending on the specified shell type, the result body is available for the end-user either per request or on a time regular basis.\
 
-## Usage
-Before run the program make sure you specified configuration file config.yaml and placed it into ./res/.
-To run script use your python interpreter as follows
+## Installation
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install.
+
 ```bash
-python main.py
+pip install planteye-vision
 ```
 
-## Configure
-Create a config file according to the following structure: inlets, processors and shell.
+## Requirements
+Depending on the current configuration, PlantEye-Vision might require installation of additional packages, e.g. opcua-python for opcua inlet.
+
+## Usage
+The PlantEye-Vision instance expects a configuration to be specified.
+The easiest way is to create a separate yaml file with the configuration and load it as shown below:
+
+```python
+from planteye_vision.pipeline_execution.pipeline_executor import PipeLineExecutor
+from planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
+from yaml import safe_load
+
+path_to_config_file = 'config_minimal_restapi.yaml'
+with open(path_to_config_file) as config_file:
+    config_dict = safe_load(config_file)
+
+config = PlantEyeConfiguration()
+config.read(config_dict)
+PipeLineExecutor(config).run()
+```
+
+## Configuration
+The configuration consists of three major sections: inlets, processors and shell.
 Please use the following configuration as an example.
 ```yaml
 ---
@@ -90,7 +111,7 @@ shell:
     port: 5000
     endpoint: '/get_frame'
 ```
-Some typical configurations can be also found in ../res/
+Some typical configurations can be also found in the folder /example
 
 ### Data inlets
 Data inlets are data sources which provides data.
@@ -439,16 +460,3 @@ The rest api shell also provides a possibility to update the configuration of ru
 This might be done by placing post requests with a new configuration.
 The new configuration must have the same structure as the configuration file (except the shell part), but encoded in the json format.
 Please take into account that the current configuration will be replaced completely and only if the new configuration is valid. 
-
-## Requirements
-To install requirements use the following command:
-```bash
-pip3 install -r requirements.txt
-```
-By deploying PlantEye please consider compatability of required python packages.
-It might be important to manually disable some inlet and processor type if they are not supported on the used architecture.
-
-## License
-Valentin Khaydarov (valentin.khaydarov@tu-dresden.de)\
-Process-To-Order-Lab (https://tu-dresden.de/ing/forschung/bereichs-labs/P2O-Lab)\
-TU Dresden\
