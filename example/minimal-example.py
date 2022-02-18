@@ -13,4 +13,3 @@ with open(path_to_config_file) as config_file:
 config = PlantEyeConfiguration()
 config.read(config_dict)
 PipeLineExecutor(config).run()
-

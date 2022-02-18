@@ -244,7 +244,10 @@ class TFModelInference(ConfigurableDataProcessor):
         model_name = self.config.parameters['model_name']
         model_version = self.config.parameters['model_version']
         self.path_to_model = os.path.join(path_to_models, model_name, model_version)
-        self.tf_model = tf.keras.models.load_model(self.path_to_model)
+        try:
+            self.tf_model = tf.keras.models.load_model(self.path_to_model)
+        except Exception:
+            logging.error('Processor ' + self.name + ' (' + self.type + '): no tf model can be loaded')
         self.name = self.config.name
         self.type = self.config.type
         # self.tf_model.summary()
