@@ -184,7 +184,7 @@ Parameters:\
   height (neccesary): final height of the image
   interpolation (optional, default INTER_NEAREST): interpolation method, for more information see opencv documentation
 
-#### image_resize
+#### image_crop
 This processor crops images to a given area.
 Parameters:\
   x_init (necessary): left bottom corner of the crop area
