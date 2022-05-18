@@ -134,16 +134,19 @@ class PlantEyeConfiguration(Configuration):
     def _components_are_valid(self):
         if self.shell is not None:
             if not self.shell.is_valid():
+                logging.error('Shell configuration invalid')
                 return False
 
         if len(self.inlets) > 0:
             for inlet in self.inlets:
                 if not inlet.is_valid():
+                    logging.error(f'Inlet {inlet.name}: configuration invalid')
                     return False
 
         if len(self.processors) > 0:
             for processor in self.processors:
                 if not processor.is_valid():
+                    logging.error(f'Processor {processor.name}: configuration invalid')
                     return False
 
         return True
