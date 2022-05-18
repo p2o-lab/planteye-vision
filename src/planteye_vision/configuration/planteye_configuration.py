@@ -25,6 +25,7 @@ class PlantEyeConfiguration(Configuration):
 
         if not isinstance(cfg_dict, dict):
             self.valid_structure = False
+            logging.error('Configuration has invalid structure')
         self.cfg_dict = cfg_dict
 
         if 'shell' in self.cfg_dict.keys():
