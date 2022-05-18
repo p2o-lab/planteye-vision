@@ -1,6 +1,8 @@
-jsonschema~=3.2.0
-opencv-python~=4.5.2.52
-logging~=0.4.9.6
-PyYAML~=5.4.1
-Flask~=2.0.0
-numpy~=1.20.3
+opencv-python
+PyYAML
+Flask
+numpy
+opcua
+neoapi
+tensorflow
+requests

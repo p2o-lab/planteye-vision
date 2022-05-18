@@ -2,7 +2,7 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-config.yaml
+res/config_camera_to_disk.yaml
 /data
 /.idea
 /supportings
@@ -72,3 +72,4 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+/res/
