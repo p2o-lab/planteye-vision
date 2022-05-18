@@ -2,6 +2,7 @@ import logging
 from time import sleep
 from opcua import Client, ua
 import threading
+import socket
 
 from planteye_vision.inlet.inlet import Inlet
 from planteye_vision.configuration.inlet_configuration import OPCUAValueConfiguration
@@ -119,6 +120,8 @@ class OPCUAClient:
             sleep(1)
             self.connected_once = True
         except Exception as exc:
+            logging.warning('Connection to OPC UA server %s failed' % self.server, exc_info=exc)
+        except socket.timeout as exc:
             logging.warning('Connection to OPC UA server %s failed' % self.server, exc_info=exc)
 
     def __connectivity_routine(self):
