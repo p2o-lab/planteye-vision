@@ -5,7 +5,7 @@ inlets:
     type: local_camera_cv2
     hidden: False
     parameters:
-      device_id: 1
+      device_id: 0
       Width: 720
       ExposureTime: 720
     metadata:
@@ -20,6 +20,19 @@ inlets:
       unit: none
       interpretation: no artificial light switched on
       description: light conditions during experiment
+  3:
+    name: stirrer_rotational_speed
+    type: opcua_variable
+    parameters:
+      server: 'opc.tcp://opcuademo.sterfive.com:26543'
+      username:
+      password:
+      node_ns: 8
+      node_id: Scalar_Simulation_Float
+    metadata:
+      unit: none
+      interpretation: none
+      description: a selected opcua variable
 processors:
   0:
     name: image_input

@@ -1,5 +1,5 @@
-from planteye_vision.pipeline_execution.pipeline_executor import PipeLineExecutor
-from planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
+from src.planteye_vision.pipeline_execution.pipeline_executor import PipeLineExecutor
+from src.planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
 from yaml import safe_load
 import logging
 
