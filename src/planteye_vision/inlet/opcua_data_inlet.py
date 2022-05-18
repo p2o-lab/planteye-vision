@@ -121,8 +121,8 @@ class OPCUAClient:
             self.connected_once = True
         except Exception as exc:
             logging.warning('Connection to OPC UA server %s failed' % self.server, exc_info=exc)
-        except socket.timeout as exc:
-            logging.warning('Connection to OPC UA server %s failed' % self.server, exc_info=exc)
+        except socket.timeout:
+            logging.warning('Connection to OPC UA server %s failed due to timeout' % self.server)
 
     def __connectivity_routine(self):
         while True:

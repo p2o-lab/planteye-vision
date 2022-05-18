@@ -53,9 +53,9 @@ class InputProcessor(ConfigurableDataProcessor):
         self.input_inlets = []
 
     def apply_configuration(self):
-        self.input_inlets = self.config.parameters['input_inlets']
         self.name = self.config.name
         self.type = self.config.type
+        self.input_inlets = self.config.parameters['input_inlets']
 
     def apply_processor(self, chunks: list):
         output_data = []
@@ -88,11 +88,11 @@ class ImageResize(ConfigurableDataProcessor):
         self.interpolation = None
 
     def apply_configuration(self):
+        self.name = self.config.name
+        self.type = self.config.type
         self.width = self.config.parameters['width']
         self.height = self.config.parameters['height']
         self.interpolation = self.config.parameters['interpolation']
-        self.name = self.config.name
-        self.type = self.config.type
 
     def apply_processor(self, chunks: list):
         result_chunks = []
@@ -141,12 +141,12 @@ class ImageCrop(ConfigurableDataProcessor):
         self.y_diff = None
 
     def apply_configuration(self):
+        self.name = self.config.name
+        self.type = self.config.type
         self.x_init = self.config.parameters['x_init']
         self.x_diff = self.config.parameters['x_diff']
         self.y_init = self.config.parameters['y_init']
         self.y_diff = self.config.parameters['y_diff']
-        self.name = self.config.name
-        self.type = self.config.type
 
     def apply_processor(self, chunks):
         result_chunks = []
@@ -191,9 +191,9 @@ class ImageColorConversion(ConfigurableDataProcessor):
         self.conversion = None
 
     def apply_configuration(self):
-        self.conversion = self.config.parameters['conversion']
         self.name = self.config.name
         self.type = self.config.type
+        self.conversion = self.config.parameters['conversion']
 
     def apply_processor(self, chunks):
         result_chunks = []
@@ -240,18 +240,18 @@ class TFModelInference(ConfigurableDataProcessor):
     def apply_configuration(self):
         if not self.config.is_valid():
             return
+        self.name = self.config.name
+        self.type = self.config.type
         path_to_models = self.config.parameters['path_to_models']
         model_name = self.config.parameters['model_name']
         model_version = self.config.parameters['model_version']
         self.path_to_model = os.path.join(path_to_models, model_name, model_version)
         try:
             self.tf_model = tf.keras.models.load_model(self.path_to_model)
-            logging.error('Processor ' + self.name + ' (' + self.type + '): tf model loaded')
+            logging.info('Processor ' + self.name + ' (' + self.type + '): tf model loaded')
             self.tf_model.summary()
         except Exception:
             logging.error('Processor ' + self.name + ' (' + self.type + '): no tf model can be loaded')
-        self.name = self.config.name
-        self.type = self.config.type
 
     def apply_processor(self, data_chunks):
         image_np = data_chunks[0].data[0].value
