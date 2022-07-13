@@ -113,6 +113,12 @@ class BaumerCameraInlet(CameraInlet):
         timestamp = MetadataChunkData('timestamp', get_timestamp())
         data_chunk.add_metadata(timestamp)
 
+        camera_configuration = self.get_configuration()
+        if camera_configuration:
+            for feature_name, feature_value in self.get_configuration():
+                feature_metadata_chunk = MetadataChunkData(feature_name, feature_value)
+                data_chunk.add_metadata(feature_metadata_chunk)
+
         if not self.camera_status.initialised:
             status = CapturingStatus(1)
             data_chunk.add_status(status)
@@ -135,8 +141,6 @@ class BaumerCameraInlet(CameraInlet):
             frame_np = np.random.rand(640, 480, 3)
         else:
             frame_raw = self.camera_object.GetImage(GET_IMAGE_TIMEOUT)
-            frame_shape = frame_raw.shape
-            frame_colormap = 'BGR'
             frame_np = frame_raw.GetNPArray()
 
         self.camera_status.capturing = False
