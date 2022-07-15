@@ -6,7 +6,7 @@ import logging
 logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%(funcName)s: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
 
-path_to_config_file = 'config_minimal_restapi.yaml'
+path_to_config_file = 'config_baumer_restapi.yaml'
 with open(path_to_config_file) as config_file:
     config_dict = safe_load(config_file)
 

@@ -5,7 +5,16 @@ from planteye_vision.inlet.opcua_data_inlet import OPCUADataInlet
 from planteye_vision.inlet.restapi_inlet import RestAPIDataInlet
 from planteye_vision.shell.rest_api_shell import RestAPIShell
 from planteye_vision.shell.periodical_local_shell import PeriodicalLocalShell
-from planteye_vision.processors.data_processors import *
+from planteye_vision.processors.chunks_to_dict_processor import ChunksToDict
+from planteye_vision.processors.encode_image_chunks_to_base_64_processor import EncodeImageChunksToBase64
+from planteye_vision.processors.image_color_conversion_processor import ImageColorConversion
+from planteye_vision.processors.image_crop_processor import ImageCrop
+from planteye_vision.processors.image_resize_processor import ImageResize
+from planteye_vision.processors.input_processor import InputProcessor
+from planteye_vision.processors.save_on_disc_processor import SaveOnDiskProcessor
+from planteye_vision.processors.tf_model_inference_processor import TFModelInference
+
+
 from planteye_vision.processors.data_processor import *
 from planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
 
@@ -93,6 +102,7 @@ class PipeLineExecutor:
             elif processor_config.type == 'color_conversion':
                 processor = ImageColorConversion(processor_config)
             elif processor_config.type == 'tf_inference':
+                import tensorflow as tf
                 processor = TFModelInference(processor_config)
             elif processor_config.type == 'save_on_disk':
                 processor = SaveOnDiskProcessor(processor_config)

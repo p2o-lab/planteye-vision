@@ -27,6 +27,7 @@ class BaumerCameraInlet(CameraInlet):
 
     def apply_configuration(self):
         if not DEBUG:
+            self.connect()
             self.camera_object.SetSynchronFeatureMode(True)
         super().apply_configuration()
 
@@ -57,7 +58,7 @@ class BaumerCameraInlet(CameraInlet):
 
         try:
             self.camera_object.SetFeature(parameter, requested_value)
-            new_value = str(self.camera_object.GetFeature(parameter))
+            new_value = str(self.camera_object.GetFeature(parameter).value)
             logging.info('Feature %s set to %s' % (parameter, new_value))
             return True
         except neoapi.FeatureAccessException as exc:
@@ -83,7 +84,7 @@ class BaumerCameraInlet(CameraInlet):
     def _connect_attempt(self):
         logging.info('Trying to connect to capturing device...')
         try:
-            self.camera_object.Connect(self.config.parameters['device_id'])
+            self.camera_object.Connect()
         except neoapi.NotConnectedException as exc:
             logging.error('Capturing device not connected... trying again', exc_info=exc)
         except neoapi.NoAccessException as exc:
@@ -114,10 +115,9 @@ class BaumerCameraInlet(CameraInlet):
         data_chunk.add_metadata(timestamp)
 
         camera_configuration = self.get_configuration()
-        if camera_configuration:
-            for feature_name, feature_value in self.get_configuration():
-                feature_metadata_chunk = MetadataChunkData(feature_name, feature_value)
-                data_chunk.add_metadata(feature_metadata_chunk)
+        for feature_name, feature_value in camera_configuration.items():
+            feature_metadata_chunk = MetadataChunkData(feature_name, feature_value)
+            data_chunk.add_metadata(feature_metadata_chunk)
 
         if not self.camera_status.initialised:
             status = CapturingStatus(1)
@@ -171,13 +171,14 @@ class BaumerCameraInlet(CameraInlet):
         if not self.camera_object.IsConnected():
             return {}
         return {
-            'id': neoapi.CamInfo().GetId(),
-            'model_name': neoapi.CamInfo().GetModelName(),
-            'serial_number': neoapi.CamInfo().GetSerialNumber(),
-            'vendor_name': neoapi.CamInfo().GetVendorName(),
+            'model': self.camera_object.f.DeviceModelName.value
         }
 
     def get_configuration(self):
         if not self.camera_object.IsConnected():
             return {}
-        return {f.GetName(): f.GetValue() for f in neoapi.FeatureList}
+        feature_list = ['ExposureAuto', 'ExposureTime', 'Gain', 'GainAuto', 'Gamma', 'Width', 'Height', 'OffsetX', 'OffsetY', 'BalanceWhiteAuto', 'PixelFormat']
+        feature_dict = {}
+        for f_name in feature_list:
+            feature_dict[f_name] = eval(f"self.camera_object.f.{f_name}.value")
+        return feature_dict
