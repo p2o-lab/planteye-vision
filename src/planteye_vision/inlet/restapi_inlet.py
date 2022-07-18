@@ -57,7 +57,10 @@ class RestAPIDataInlet(Inlet):
             chunk_type = data_chunk_content['type']
             parameters = data_chunk_content['parameters']
             data_chunk = GeneralDataChunk(name, chunk_type, parameters, hidden=self.config.hidden)
+
             [data_chunk.add_data(data_chunk_data) for data_chunk_data in self.parse_data(data_chunk_content)]
+            [data_chunk.add_metadata(data_chunk_data) for data_chunk_data in self.parse_metadata(data_chunk_content)]
+            [data_chunk.add_status(data_chunk_data) for data_chunk_data in self.parse_status(data_chunk_content)]
 
             data_chunks.append(data_chunk)
 
@@ -103,7 +106,7 @@ class RestAPIDataInlet(Inlet):
         metadata_chunks = []
 
         for metadata_chunk_name, metadata_chunk_content in data_chunk_dict['metadata'].items():
-            data_name = metadata_chunk_content['name']
+            data_name = metadata_chunk_content['parameter']
             data_value = metadata_chunk_content['value']
             metadata_chunks.append(MetadataChunkData(data_name, data_value))
 
@@ -120,7 +123,7 @@ class RestAPIDataInlet(Inlet):
 
         for status_chunk_name, status_chunk_content in data_chunk_dict['status'].items():
             status_code = status_chunk_content['code']
-            operation_type = status_chunk_content['operation_type']
+            operation_type = status_chunk_content['type']
             if operation_type == 'image_capturing':
                 status_chunks.append(CapturingStatus(status_code))
             elif operation_type == 'processor':
