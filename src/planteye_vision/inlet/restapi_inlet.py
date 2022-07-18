@@ -7,6 +7,7 @@ from planteye_vision.data_chunks.data_chunk_data import *
 from planteye_vision.data_chunks.metadata_chunk import MetadataChunkData
 from planteye_vision.data_chunks.data_chunk_status import *
 import requests
+from time import time
 
 
 class RestAPIDataInlet(Inlet):
@@ -23,14 +24,20 @@ class RestAPIDataInlet(Inlet):
         self.type = self.config.type
 
     def retrieve_data(self):
+        logging.debug('Data retrieval began...')
+        step_begin = time()
         response = self.request_json()
-
+        step_duration = time() - step_begin
+        logging.debug(f'Data retrieval completed, execution time: {step_duration}')
         if response is None:
             logging.error('Data NOT read')
             return []
 
+
         if response.status_code == 200:
+
             return self.parse_data_chunks(response.json())
+
         else:
             logging.error('Data NOT read')
             return []
@@ -42,8 +49,9 @@ class RestAPIDataInlet(Inlet):
             return None
 
     def parse_data_chunks(self, json):
+        logging.debug('Data chunks parsing began...')
+        step_begin = time()
         data_chunks = []
-
         for data_chunk_name, data_chunk_content in json.items():
             name = data_chunk_content['name']
             chunk_type = data_chunk_content['type']
@@ -53,9 +61,13 @@ class RestAPIDataInlet(Inlet):
 
             data_chunks.append(data_chunk)
 
+        step_duration = time() - step_begin
+        logging.debug(f'Data chunks parsing completed, execution time: {step_duration}')
+
         return data_chunks
 
     def parse_data(self, data_chunk_dict):
+
         if 'data' not in data_chunk_dict.keys():
             return []
 
@@ -68,10 +80,16 @@ class RestAPIDataInlet(Inlet):
             data_name = data_chunk_data_content['name']
             data_type = data_chunk_data_content['type']
             data_value = data_chunk_data_content['value']
+
+            logging.debug(f'Data parsing for chunk {data_name} ({data_type}) began...')
+            step_begin = time()
+
             if data_type == 'base64_png':
                 data_chunks.append(DataChunkImage(data_name, data_value, data_type))
             else:
                 data_chunks.append(DataChunkValue(data_name, data_value, data_type))
+            step_duration = time() - step_begin
+            logging.debug(f'Data parsing for chunk {data_name} ({data_type}) completed, execution time: {step_duration}')
 
         return data_chunks
 
