@@ -42,6 +42,7 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
                         image_file_full_path = os.path.join(self.config.parameters['save_path'], image_file_name)
                         ret_val = cv2.imwrite(image_file_full_path, chunk.data[0].value)
                         chunk_dict['data'] = {image.name: image_file_name}
+                        logging.info('Data saved in ' + image_file_full_path)
 
             json_dict[chunk.name] = chunk_dict
 

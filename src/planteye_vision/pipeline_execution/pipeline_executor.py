@@ -100,7 +100,6 @@ class PipeLineExecutor:
             elif processor_config.type == 'color_conversion':
                 processor = ImageColorConversion(processor_config)
             elif processor_config.type == 'tf_inference':
-                import tensorflow as tf
                 processor = TFModelInference(processor_config)
             elif processor_config.type == 'save_on_disk':
                 processor = SaveOnDiskProcessor(processor_config)
