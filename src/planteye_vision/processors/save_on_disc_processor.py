@@ -37,7 +37,7 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
             if chunk.chunk_type in ['local_camera_cv2', 'baumer_camera_neoapi', 'image_resize', 'image_crop', 'color_conversion']:
                 chunk_dict.pop('data')
                 for image in chunk.data:
-                    if isinstance(image, DataChunkImage):
+                    if isinstance(image, DataChunkImage) and chunk.data[0].value is not None:
                         image_file_name = str(timestamp) + '_' + chunk.name + '_' + image.name + '.png'
                         image_file_full_path = os.path.join(self.config.parameters['save_path'], image_file_name)
                         ret_val = cv2.imwrite(image_file_full_path, chunk.data[0].value)

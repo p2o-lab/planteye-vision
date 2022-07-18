@@ -114,9 +114,5 @@ class RestAPIDataInlet(Inlet):
 
         return status_chunks
 
-
-
-
-
     def execute(self):
         return super().execute()

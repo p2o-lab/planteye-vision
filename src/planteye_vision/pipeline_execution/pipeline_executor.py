@@ -13,8 +13,6 @@ from planteye_vision.processors.image_resize_processor import ImageResize
 from planteye_vision.processors.input_processor import InputProcessor
 from planteye_vision.processors.save_on_disc_processor import SaveOnDiskProcessor
 from planteye_vision.processors.tf_model_inference_processor import TFModelInference
-
-
 from planteye_vision.processors.data_processor import *
 from planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
 
