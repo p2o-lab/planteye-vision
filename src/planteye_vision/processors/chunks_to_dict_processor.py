@@ -13,7 +13,7 @@ class ChunksToDict(NonConfigurableDataProcessor):
         for chunk in chunks:
             if not chunk.hidden:
                 response_body[chunk.name] = chunk.as_dict()
-        logging.info('Processor ' + self.name + ' (' + self.type + '): execution successful')
+        logging.debug(f'Processor {self.name} ({self.type}): execution successful')
         return response_body
 
     def execute(self, input_data):

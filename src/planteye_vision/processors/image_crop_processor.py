@@ -34,7 +34,7 @@ class ImageCrop(ConfigurableDataProcessor):
                 if not self.config.is_valid():
                     status = ProcessorStatus(100)
                     data_chunk.add_status(status)
-                    logging.warning('Processor ' + self.name + ' (' + self.type + '): no execution, invalid configuration')
+                    logging.warning(f'Processor {self.name} ({self.type}): no execution, invalid configuration')
                     continue
                 x_end = int(self.x_init + self.x_diff)
                 y_end = int(self.y_init + self.y_diff)
@@ -46,11 +46,11 @@ class ImageCrop(ConfigurableDataProcessor):
                     data_type = 'image'
                     data_chunk.add_status(status)
                     data_chunk.add_data(DataChunkImage('frame', value, data_type))
-                    logging.info('Processor ' + self.name + ' (' + self.type + '): execution successful')
+                    logging.debug(f'Processor {self.name} ({self.type}): execution successful')
                 except Exception:
                     status = ProcessorStatus(99)
                     data_chunk.add_status(status)
-                    logging.warning('Processor ' + self.name + ' (' + self.type + '): error during execution')
+                    logging.warning(f'Processor {self.name} ({self.type}): error during execution')
                 result_chunks.append(data_chunk)
             else:
                 result_chunks.append(chunk)

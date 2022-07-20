@@ -16,6 +16,7 @@ class OPCUADataInlet(Inlet):
     """
     This class describes an OPC UA data inlet
     """
+
     def __init__(self, config: OPCUAValueConfiguration):
         self.config = config
         self.name = None
@@ -51,7 +52,7 @@ class OPCUADataInlet(Inlet):
         else:
             status = OPCUAReadStatus(100)
             data_chunk.add_status(status)
-            print('Step %s : No execution due to invalid configuration' % self.name)
+            logging.error(f'Step {self.name}: No execution due to invalid configuration')
 
         for metadata_variable, metadata_value in self.config.metadata.items():
             data_chunk.add_metadata(MetadataChunkData(metadata_variable, metadata_value))
@@ -60,7 +61,7 @@ class OPCUADataInlet(Inlet):
     def poll_node(self):
         if not self.opcua_client.get_connection_status():
             logging.warning(
-                'Cannot poll %s from OPCA UA server %s (no connection)' % (self.name, self.opcua_client.get_url()))
+                f'Cannot poll {self.name} from OPC UA server {self.opcua_client.get_url()} (no connection)')
             return None
         try:
             node_obj = ua.NodeId(self.config.parameters['node_id'], self.config.parameters['node_ns'])
@@ -72,8 +73,8 @@ class OPCUADataInlet(Inlet):
                 self.opcua_client.get_url(), str(self.config.parameters['node_id']), str(timestamp), str(value)))
             return value
         except Exception as exc:
-            logging.info('Server %s, Node %s: Value polling failed' % (self.opcua_client.get_url(), str(self.config.parameters['node_id'])),
-                         exc_info=exc)
+            logging.warning(f'{self.opcua_client.get_url()}: {self.config.parameters["node_id"]}: polling failed',
+                            exc_info=exc)
             return None
 
     def execute(self):
@@ -105,24 +106,24 @@ class OPCUAClient:
         sleep(1)
 
     def disconnect(self):
-        logging.info('Disconnecting to OPC UA server %s ...' % self.server)
+        logging.debug(f'Disconnecting to OPC UA server {self.server} ...')
         self.stop_flag = True
         self.client.disconnect()
         while not self.stopped:
             sleep(0.1)
-            logging.info('Disconnected from OPC UA server %s' % self.server)
+            logging.info(f'Disconnected from OPC UA server {self.server}')
 
     def __single_connect(self):
-        logging.info('Connecting to OPC UA server %s ...' % self.server)
+        logging.debug(f'Connecting to OPC UA server {self.server} ...')
         try:
             self.client.connect()
-            logging.info('Connection to OPC UA server %s established' % self.server)
+            logging.info(f'Connection to OPC UA server {self.server} established')
             sleep(1)
             self.connected_once = True
         except Exception as exc:
-            logging.warning('Connection to OPC UA server %s failed' % self.server, exc_info=exc)
+            logging.warning(f'Connection to OPC UA server self.server failed', exc_info=exc)
         except socket.timeout:
-            logging.warning('Connection to OPC UA server %s failed due to timeout' % self.server)
+            logging.warning(f'Connection to OPC UA server {self.server} failed due to timeout')
 
     def __connectivity_routine(self):
         while True:
@@ -135,13 +136,13 @@ class OPCUAClient:
             sleep(self.reconnect_interval / 1000)
 
     def check_connection(self):
-        logging.debug('Checking connection status to OPCA UA server %s ...' % self.server)
+        logging.debug(f'Checking connection status to OPC UA server {self.server} ...')
         try:
             self.client.get_node(ua.NodeId(2259, 0)).get_data_value()
-            logging.debug('Connection to OPCA UA server %s persists' % self.server)
+            logging.debug(f'Connection to OPC UA server {self.server} persists')
             self.connection_status = True
         except Exception as exc:
-            logging.warning('Connection to OPCA UA server %s does NOT persist' % self.server)
+            logging.warning(f'Connection to OPC UA server {self.server} does NOT persist')
             self.connection_status = False
             sleep(1)
 

@@ -14,7 +14,6 @@ class EncodeImageChunksToBase64(NonConfigurableDataProcessor):
             for chunk_pieces in chunk.data:
                 if isinstance(chunk_pieces, DataChunkImage):
                     chunk_pieces.encode_as_base64()
-        logging.info('Processor ' + self.name + ' (' + self.type + '): execution successful')
 
     def execute(self, input_data):
         return super().execute(input_data)

@@ -44,27 +44,15 @@ class TimeScheduler:
     def executable(self):
         expected_step_end = time() - self.time_interval / 1000.0
         while not self.stop_flag:
-            #print('Loop step %f' % time())
-            logging.info('Shell execution step')
+            logging.debug('Shell execution step began')
             step_begin = time()
             expected_step_end = expected_step_end + self.time_interval / 1000.0
-            #print('Step begin %f' % step_begin)
-            #print('Expected step end %f' % expected_step_end)
             if step_begin > expected_step_end:
                 logging.error('Shell execution step skipped (consider increasing interval)')
-                #print('Skip step')
                 continue
-            #print('Execute step')
-            logging.info('Shell execution step began')
             self.executed_function()
-            step_duration = time() - step_begin
-            debug_str = 'Shell execution step duration %i ms' % int(step_duration * 1000)
-            logging.debug(debug_str)
-            #print('End step %f' % time())
-            #print('Step execution duration %f' % step_duration)
             if time() > expected_step_end:
-                #print('Step execution longer than interval')
-                logging.warning('Shell execution step took longer (' + str(step_duration) + ') than given time interval ' + '(' + str(self.time_interval) + ')')
+                warn_msg = f'Shell execution step took longer than given time interval ({self.time_interval/1000.0} s)'
+                logging.warning(warn_msg)
             else:
-                #print('Sleep for %f' % max(expected_step_end-time(), 0))
                 sleep(max(expected_step_end-time(), 0))

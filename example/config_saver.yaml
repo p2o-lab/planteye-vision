@@ -4,7 +4,7 @@ inlets:
     name: resapi_inlet
     type: restapi
     parameters:
-      endpoint: http://localhost:5000/get_frame
+      endpoint: http://127.0.0.1:5000/get_frame
 processors:
   0:
     name: image_input
@@ -15,8 +15,8 @@ processors:
     name: save
     type: save_on_disk
     parameters:
-      save_path: '../data'
+      save_path: '..\data'
 shell:
   type: periodical_local
   parameters:
-    time_interval: 3000
+    time_interval: 1000

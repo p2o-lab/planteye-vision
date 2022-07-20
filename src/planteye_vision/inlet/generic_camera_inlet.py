@@ -32,7 +32,7 @@ class GenericCameraInlet(CameraInlet):
         par = None
         try:
             par = exec("cv2.%s" % parameter)
-        except Exception:
+        except Exception as exc:
             logging.warning('Parameter (' + parameter + ') is not found by name')
             return False
 
@@ -85,7 +85,7 @@ class GenericCameraInlet(CameraInlet):
         if not self.config.is_valid():
             status = CapturingStatus(100)
             data_chunk.add_status(status)
-            print('Step %s : No execution due to invalid configuration' % self.name)
+            logging.debug(f'Step {self.name} : No execution due to invalid configuration')
             return [data_chunk]
 
         if not self.camera_status.initialised:
@@ -97,14 +97,14 @@ class GenericCameraInlet(CameraInlet):
         if not self.camera_status.initialised:
             status = CapturingStatus(1)
             data_chunk.add_status(status)
-            logging.warning(status.get_message())
+            logging.debug(status.get_message())
             self.camera_status.initialised = False
             return [data_chunk]
 
         if self.camera_status.capturing:
             status = CapturingStatus(2)
             data_chunk.add_status(status)
-            logging.warning(status.get_message())
+            logging.debug(status.get_message())
             self.camera_status.initialised = False
             return [data_chunk]
 
@@ -117,7 +117,7 @@ class GenericCameraInlet(CameraInlet):
 
             status = CapturingStatus(0)
             data_chunk.add_status(status)
-            logging.warning(status.get_message())
+            logging.debug(status.get_message())
 
             data_chunk.add_metadata(MetadataChunkData('colormap', 'BGR'))
             data_chunk.add_metadata(MetadataChunkData('shape', frame_np.shape))
@@ -127,7 +127,7 @@ class GenericCameraInlet(CameraInlet):
         else:
             status = CapturingStatus(99)
             data_chunk.add_status(status)
-            logging.warning(status.get_message())
+            logging.debug(status.get_message())
             self.camera_status.initialised = False
             return [data_chunk]
 

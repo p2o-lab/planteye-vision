@@ -28,18 +28,14 @@ class RestAPIDataInlet(Inlet):
         step_begin = time()
         response = self.request_json()
         step_duration = time() - step_begin
-        logging.debug(f'Data retrieval completed, execution time: {step_duration}')
+        logging.info(f'Data retrieval completed (exec time {step_duration:.3f} s)')
         if response is None:
-            logging.error('Data NOT read')
+            logging.error('Empty data returned')
             return []
-
-
         if response.status_code == 200:
-
             return self.parse_data_chunks(response.json())
-
         else:
-            logging.error('Data NOT read')
+            logging.error('Empty data returned')
             return []
 
     def request_json(self):
@@ -69,16 +65,13 @@ class RestAPIDataInlet(Inlet):
 
         return data_chunks
 
-    def parse_data(self, data_chunk_dict):
-
+    @staticmethod
+    def parse_data(data_chunk_dict):
         if 'data' not in data_chunk_dict.keys():
             return []
-
         if len(data_chunk_dict['data']) == 0:
             return []
-
         data_chunks = []
-
         for data_chunk_data_name, data_chunk_data_content in data_chunk_dict['data'].items():
             data_name = data_chunk_data_content['name']
             data_type = data_chunk_data_content['type']
@@ -92,11 +85,12 @@ class RestAPIDataInlet(Inlet):
             else:
                 data_chunks.append(DataChunkValue(data_name, data_value, data_type))
             step_duration = time() - step_begin
-            logging.debug(f'Data parsing for chunk {data_name} ({data_type}) completed, execution time: {step_duration}')
+            logging.debug(f'Data parsing for chunk {data_name} ({data_type}) completed (exec time {step_duration:.3f}')
 
         return data_chunks
 
-    def parse_metadata(self, data_chunk_dict):
+    @staticmethod
+    def parse_metadata(data_chunk_dict):
         if 'metadata' not in data_chunk_dict.keys():
             return []
 
@@ -112,7 +106,8 @@ class RestAPIDataInlet(Inlet):
 
         return metadata_chunks
 
-    def parse_status(self, data_chunk_dict):
+    @staticmethod
+    def parse_status(data_chunk_dict):
         if 'status' not in data_chunk_dict.keys():
             return []
 

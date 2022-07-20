@@ -68,25 +68,27 @@ class PlantEyeConfiguration(Configuration):
 
         self.ongoing_config = True
 
-    def _read_shell_config(self, shell_cfg_dict):
-        logging.info('Shell configuration import...')
+    @staticmethod
+    def _read_shell_config(shell_cfg_dict):
+        logging.debug('Shell configuration import...')
         if 'type' in shell_cfg_dict.keys():
             if shell_cfg_dict['type'] == 'periodical_local':
                 shell_cfg = PeriodicalLocalShellConfiguration()
             elif shell_cfg_dict['type'] == 'rest_api':
                 shell_cfg = RestAPIShellConfiguration()
             else:
-                logging.info('Fail to import shell configuration')
+                logging.error('Fail to import shell configuration')
                 return None
             logging.info('Shell configuration imported')
             shell_cfg.read(shell_cfg_dict)
             return shell_cfg
         else:
-            logging.info('Fail to import shell configuration')
+            logging.error('Fail to import shell configuration')
             return None
 
-    def _read_inlet_configs(self, inlets_cfg_list):
-        logging.info('Inlet configurations import...')
+    @staticmethod
+    def _read_inlet_configs(inlets_cfg_list):
+        logging.debug('Inlet configurations import...')
         inlet_configs = []
         for inlet_cfg_dict in inlets_cfg_list:
             if 'type' in inlet_cfg_dict.keys():
@@ -105,8 +107,9 @@ class PlantEyeConfiguration(Configuration):
         logging.info('Inlets configuration imported')
         return inlet_configs
 
-    def _read_processor_configs(self, processors_cfg_list):
-        logging.info('Processors configurations import...')
+    @staticmethod
+    def _read_processor_configs(processors_cfg_list):
+        logging.debug('Processors configurations import...')
         processor_configs = []
         for processor_cfg_dict in processors_cfg_list:
             if 'type' in processor_cfg_dict.keys():

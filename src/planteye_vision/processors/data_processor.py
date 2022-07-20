@@ -3,22 +3,21 @@ import time
 import logging
 
 
-class DataProcessor (ABC):
+class DataProcessor(ABC):
     @abstractmethod
     def apply_processor(self, input_data):
         pass
 
     def execute(self, input_data):
         begin_time = time.time()
-        logging.debug('Processor ' + self.name + ' (' + self.type + ') execution began')
+        logging.debug(f'Processor {self.name} ({self.type}) execution execution began')
         processor_result = self.apply_processor(input_data)
-        end_time = time.time()
-        exec_duration = end_time - begin_time
-        logging.debug('Processor ' + self.name + ' (' + self.type + ') execution finished, execution time:' + str(exec_duration))
+        exec_duration = time.time() - begin_time
+        logging.info(f'Processor {self.name} ({self.type}) execution finished (exec time {exec_duration:.3f} s)')
         return processor_result
 
 
-class NonConfigurableDataProcessor (DataProcessor):
+class NonConfigurableDataProcessor(DataProcessor):
     @abstractmethod
     def apply_processor(self, input_data):
         pass
@@ -27,7 +26,7 @@ class NonConfigurableDataProcessor (DataProcessor):
         return super().execute(input_data)
 
 
-class ConfigurableDataProcessor (DataProcessor):
+class ConfigurableDataProcessor(DataProcessor):
     @abstractmethod
     def apply_configuration(self):
         pass

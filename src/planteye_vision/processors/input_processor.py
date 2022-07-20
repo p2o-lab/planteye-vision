@@ -19,7 +19,7 @@ class InputProcessor(ConfigurableDataProcessor):
     def apply_processor(self, chunks: list):
         output_data = []
         if not self.config.is_valid():
-            logging.warning('Processor ' + self.name + ' (' + self.type + '): no execution, invalid configuration')
+            logging.warning(f'Processor {self.name} ({self.type}): no execution, invalid configuration')
             return None
 
         if self.input_inlets == ['all']:
@@ -30,7 +30,7 @@ class InputProcessor(ConfigurableDataProcessor):
                     if chunk.name == inlet:
                         output_data.append(chunk)
 
-        logging.info('Processor ' + self.name + ' (' + self.type + '): execution successful')
+        logging.debug(f'Processor {self.name} ({self.type}): execution successful')
         return output_data
 
     def execute(self, input_data):

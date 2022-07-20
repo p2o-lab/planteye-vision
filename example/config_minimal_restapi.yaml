@@ -5,7 +5,7 @@ inlets:
     type: local_camera_cv2
     hidden: False
     parameters:
-      device_id: 0
+      device_id: 1
       Width: 720
       ExposureTime: 720
     metadata:
@@ -26,6 +26,12 @@ processors:
     type: input
     input_inlets:
       - all
+  1:
+    name: resize
+    type: image_resize
+    parameters:
+      height: 2500
+      width: 2500
 shell:
   type: rest_api
   parameters:

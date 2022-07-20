@@ -24,7 +24,7 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
 
     def apply_processor(self, data_chunks):
         if not self.config.is_valid():
-            logging.warning('Processor ' + self.name + ' (' + self.type + '): no execution, invalid configuration')
+            logging.warning(f'Processor {self.name} ({self.type}): no execution, invalid configuration')
             return None
 
         timestamp = get_timestamp()
@@ -34,7 +34,8 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
                 continue
             chunk_dict = chunk.as_dict()
 
-            if chunk.chunk_type in ['local_camera_cv2', 'baumer_camera_neoapi', 'image_resize', 'image_crop', 'color_conversion']:
+            if chunk.chunk_type in ['local_camera_cv2', 'baumer_camera_neoapi',
+                                    'image_resize', 'image_crop', 'color_conversion']:
                 chunk_dict.pop('data')
                 for image in chunk.data:
                     if isinstance(image, DataChunkImage) and chunk.data[0].value is not None:
@@ -42,7 +43,10 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
                         image_file_full_path = os.path.join(self.config.parameters['save_path'], image_file_name)
                         ret_val = cv2.imwrite(image_file_full_path, chunk.data[0].value)
                         chunk_dict['data'] = {image.name: image_file_name}
-                        logging.info('Data saved in ' + image_file_full_path)
+                        if ret_val:
+                            logging.info(f'Data saved as {image_file_full_path}')
+                        else:
+                            logging.info(f'Data NOT saved as {image_file_full_path}')
 
             json_dict[chunk.name] = chunk_dict
 
@@ -52,7 +56,7 @@ class SaveOnDiskProcessor(ConfigurableDataProcessor):
             with open(json_file_full_path, 'w') as json_file:
                 json.dump(json_dict, json_file, indent=4)
 
-        logging.info('Processor ' + self.name + ' (' + self.type + '): execution successful')
+        logging.debug(f'Processor {self.name} ({self.type}): execution successful')
         return data_chunks
 
     def execute(self, input_data):

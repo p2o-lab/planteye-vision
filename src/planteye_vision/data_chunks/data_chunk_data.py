@@ -37,7 +37,8 @@ class DataChunkImage(DataChunkData):
             _, frame_arr = cv2.imencode('.png', self.value)
             self.value = base64.b64encode(frame_arr).decode("utf-8")
 
-    def base64_decoder(self, frame: str):
+    @staticmethod
+    def base64_decoder(frame: str):
         image_data = base64.b64decode(frame)
         image_array = np.frombuffer(image_data, dtype=np.uint8)
         np_array = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
