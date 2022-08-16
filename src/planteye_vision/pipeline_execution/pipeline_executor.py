@@ -64,6 +64,7 @@ class PipeLineExecutor:
         logging.info('Shell configured')
 
     def configure_inlets(self):
+        self.inlets = []
         logging.info('INLETS CONFIGURATION:')
         inlet_configs = self.config.get_inlet_configs()
         inlets_obj = []
@@ -89,6 +90,7 @@ class PipeLineExecutor:
         logging.info('Inlets configured successfully')
 
     def configure_processors(self):
+        self.processors = []
         logging.info('PROCESSORS CONFIGURATION:')
         processors_configs = self.config.get_processor_configs()
         processors_obj = []
