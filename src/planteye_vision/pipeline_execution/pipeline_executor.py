@@ -12,7 +12,7 @@ from planteye_vision.processors.image_crop_processor import ImageCrop
 from planteye_vision.processors.image_resize_processor import ImageResize
 from planteye_vision.processors.input_processor import InputProcessor
 from planteye_vision.processors.save_on_disc_processor import SaveOnDiskProcessor
-from planteye_vision.processors.tf_model_inference_processor import TFModelInference
+#from planteye_vision.processors.tf_model_inference_processor import TFModelInference
 from planteye_vision.processors.data_processor import *
 from planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
 
@@ -101,8 +101,8 @@ class PipeLineExecutor:
                 processor = ImageCrop(processor_config)
             elif processor_config.type == 'color_conversion':
                 processor = ImageColorConversion(processor_config)
-            elif processor_config.type == 'tf_inference':
-                processor = TFModelInference(processor_config)
+            #elif processor_config.type == 'tf_inference':
+            #    processor = TFModelInference(processor_config)
             elif processor_config.type == 'save_on_disk':
                 processor = SaveOnDiskProcessor(processor_config)
             else:
