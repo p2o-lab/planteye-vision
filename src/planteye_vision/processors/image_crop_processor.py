@@ -41,7 +41,13 @@ class ImageCrop(ConfigurableDataProcessor):
 
                 try:
                     image_np = chunk.data[0].value
-                    value = image_np[self.x_init:x_end, self.y_init:y_end, :]
+                    image_dims = image_np.shape
+                    if image_dims == 3:
+                        value = image_np[self.x_init:x_end, self.y_init:y_end, :]
+                    elif image_dims == 2:
+                        value = image_np[self.x_init:x_end, self.y_init:y_end]
+                    else:
+                        raise BaseException
                     status = ProcessorStatus(0)
                     data_type = 'image'
                     data_chunk.add_status(status)
