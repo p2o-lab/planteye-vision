@@ -189,8 +189,8 @@ This processor crops images to a given area.
 Parameters:\
   x_init (necessary): left bottom corner of the crop area
   y_init (necessary): left bottom corner of the crop area
-  x_diff (necessary): width of the crop are
-  y_diff (necessary): height of the crop are
+  x_diff (necessary): width of the crop area
+  y_diff (necessary): height of the crop area
 
 #### color_conversion
 This processes changes the image color map by means of cv2.cvtColor().

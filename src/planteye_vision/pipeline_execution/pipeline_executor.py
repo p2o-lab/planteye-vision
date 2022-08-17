@@ -5,7 +5,14 @@ from planteye_vision.inlet.opcua_data_inlet import OPCUADataInlet
 from planteye_vision.inlet.restapi_inlet import RestAPIDataInlet
 from planteye_vision.shell.rest_api_shell import RestAPIShell
 from planteye_vision.shell.periodical_local_shell import PeriodicalLocalShell
-from planteye_vision.processors.data_processors import *
+from planteye_vision.processors.chunks_to_dict_processor import ChunksToDict
+from planteye_vision.processors.encode_image_chunks_to_base_64_processor import EncodeImageChunksToBase64
+from planteye_vision.processors.image_color_conversion_processor import ImageColorConversion
+from planteye_vision.processors.image_crop_processor import ImageCrop
+from planteye_vision.processors.image_resize_processor import ImageResize
+from planteye_vision.processors.input_processor import InputProcessor
+from planteye_vision.processors.save_on_disc_processor import SaveOnDiskProcessor
+#from planteye_vision.processors.tf_model_inference_processor import TFModelInference
 from planteye_vision.processors.data_processor import *
 from planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
 
@@ -22,22 +29,24 @@ class PipeLineExecutor:
         self.cfg_update_flag = False
 
     def apply_configuration(self):
+        logging.info('PIPELINE CONFIGURATION')
         if self.config.is_valid():
             self.configure_shell()
             self.configure_inlets()
             self.configure_processors()
         else:
-            logging.info('Cannot apply configuration, configuration is invalid')
+            logging.error('Cannot apply configuration, configuration is invalid')
 
     def update_configuration(self):
+        logging.info('CONFIGURATION UPDATE')
         self.cfg_update_flag = True
         self.configure_inlets()
         self.configure_processors()
         self.cfg_update_flag = False
-        print('New configuration applied')
+        logging.info('New configuration applied')
 
     def configure_shell(self):
-        logging.info('Shell configuration:')
+        logging.info('SHELL CONFIGURATION:')
         self.shell = []
         shell_config = self.config.get_shell_config()
         if shell_config.type == 'periodical_local':
@@ -48,14 +57,15 @@ class PipeLineExecutor:
             self.shell.enable_configuration_update_via_restapi(self)
         else:
             self.shell = None
-            logging.error('Unsupported shell type %s' % shell_config.type)
+            logging.error(f'Unsupported shell type {shell_config.type}')
             return
         self.shell.attach_callback(self.single_execution)
         self.shell.apply_configuration()
         logging.info('Shell configured')
 
     def configure_inlets(self):
-        logging.info('Inlet configuration:')
+        self.inlets = []
+        logging.info('INLETS CONFIGURATION:')
         inlet_configs = self.config.get_inlet_configs()
         inlets_obj = []
         for inlet_config in inlet_configs:
@@ -77,10 +87,11 @@ class PipeLineExecutor:
             logging.info(f'Inlet: Name {inlet_config.name}, Type {inlet_config.type} added')
 
         self.inlets = inlets_obj
-        logging.info('Inlets configured')
+        logging.info('Inlets configured successfully')
 
     def configure_processors(self):
-        logging.info('Processors configuration:')
+        self.processors = []
+        logging.info('PROCESSORS CONFIGURATION:')
         processors_configs = self.config.get_processor_configs()
         processors_obj = []
         for processor_config in processors_configs:
@@ -92,8 +103,8 @@ class PipeLineExecutor:
                 processor = ImageCrop(processor_config)
             elif processor_config.type == 'color_conversion':
                 processor = ImageColorConversion(processor_config)
-            elif processor_config.type == 'tf_inference':
-                processor = TFModelInference(processor_config)
+            #elif processor_config.type == 'tf_inference':
+            #    processor = TFModelInference(processor_config)
             elif processor_config.type == 'save_on_disk':
                 processor = SaveOnDiskProcessor(processor_config)
             else:
@@ -107,11 +118,12 @@ class PipeLineExecutor:
             logging.info(f'Processor: Name {processor.name}, Type {processor.type} added')
 
         self.processors = processors_obj
-        logging.info('Processors configured')
+        logging.info('Processors configured successfully')
 
     def single_execution(self):
+        logging.info('PIPELINE EXECUTION STEP')
         begin_time = time.time()
-        logging.info('Pipeline execution began')
+        logging.debug('Pipeline execution began')
         if self.cfg_update_flag:
             logging.error('Pipeline execution aborted, configuration ongoing')
             if isinstance(self.shell, RestAPIShell):
@@ -135,8 +147,7 @@ class PipeLineExecutor:
 
         end_time = time.time()
         exec_duration = end_time - begin_time
-        logging.info(
-            'Pipeline execution finished, overall execution time:' + str(exec_duration))
+        logging.info(f'Pipeline execution finished (exec time {exec_duration:.3f} s)')
 
         return result
 
@@ -166,7 +177,7 @@ class PipeLineExecutor:
 
             processing_result = processor.execute(processing_result)
             if any([len(chunk.data) == 0 for chunk in processing_result]):
-                logging.error('Pipeline execution aborted, processor ' + processor.name + ' returned nothing')
+                logging.error(f'Pipeline execution aborted, processor {processor.name} returned nothing')
                 break
 
             processor_results.extend(processing_result)

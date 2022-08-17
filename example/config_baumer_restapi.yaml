@@ -2,14 +2,11 @@
 inlets:
   1:
     name: camera
-    type: local_camera_cv2
+    type: baumer_camera_neoapi
     hidden: False
     parameters:
-      device_id: 1
-      Width: 720
-      ExposureTime: 720
-    metadata:
-      '010F': Raspberry Pi # Manufacturer of recording equipment
+      device_id: 0
+      ExposureTime: 5000
   2:
     name: light_conditions
     type: static_variable
@@ -26,12 +23,6 @@ processors:
     type: input
     input_inlets:
       - all
-  1:
-    name: resize
-    type: image_resize
-    parameters:
-      height: 2500
-      width: 2500
 shell:
   type: rest_api
   parameters:

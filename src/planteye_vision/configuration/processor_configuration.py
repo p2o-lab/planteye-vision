@@ -56,7 +56,7 @@ class ImageResizeProcessorConfiguration(ProcessorConfiguration):
             if 'interpolation' in self.cfg_dict['parameters']:
                 self.parameters['interpolation'] = self.cfg_dict['parameters']['interpolation']
             else:
-                self.parameters['height'] = 'INTER_NEAREST'
+                self.parameters['interpolation'] = 'INTER_NEAREST'
         else:
             self.valid = False
 
