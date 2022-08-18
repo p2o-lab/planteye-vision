@@ -1,7 +1,5 @@
 from planteye_vision.inlet.generic_camera_inlet import GenericCameraInlet
-from planteye_vision.inlet.baumer_camera_inlet import BaumerCameraInlet
 from planteye_vision.inlet.static_data_inlet import StaticDataInlet
-from planteye_vision.inlet.opcua_data_inlet import OPCUADataInlet
 from planteye_vision.inlet.restapi_inlet import RestAPIDataInlet
 from planteye_vision.shell.rest_api_shell import RestAPIShell
 from planteye_vision.shell.periodical_local_shell import PeriodicalLocalShell
@@ -12,12 +10,12 @@ from planteye_vision.processors.image_crop_processor import ImageCrop
 from planteye_vision.processors.image_resize_processor import ImageResize
 from planteye_vision.processors.input_processor import InputProcessor
 from planteye_vision.processors.save_on_disc_processor import SaveOnDiskProcessor
-#from planteye_vision.processors.tf_model_inference_processor import TFModelInference
-from planteye_vision.processors.data_processor import *
 from planteye_vision.configuration.planteye_configuration import PlantEyeConfiguration
+from planteye_vision.processors.data_processor import ConfigurableDataProcessor
 
 import json
 import logging
+import time
 
 
 class PipeLineExecutor:
@@ -72,10 +70,12 @@ class PipeLineExecutor:
             if inlet_config.type == 'local_camera_cv2':
                 inlet = GenericCameraInlet(inlet_config)
             elif inlet_config.type == 'baumer_camera_neoapi':
+                from planteye_vision.inlet.baumer_camera_inlet import BaumerCameraInlet
                 inlet = BaumerCameraInlet(inlet_config)
             elif inlet_config.type == 'static_variable':
                 inlet = StaticDataInlet(inlet_config)
             elif inlet_config.type == 'opcua_variable':
+                from planteye_vision.inlet.opcua_data_inlet import OPCUADataInlet
                 inlet = OPCUADataInlet(inlet_config)
             elif inlet_config.type == 'restapi':
                 inlet = RestAPIDataInlet(inlet_config)
@@ -103,8 +103,12 @@ class PipeLineExecutor:
                 processor = ImageCrop(processor_config)
             elif processor_config.type == 'color_conversion':
                 processor = ImageColorConversion(processor_config)
-            #elif processor_config.type == 'tf_inference':
-            #    processor = TFModelInference(processor_config)
+            elif processor_config.type == 'tf_inference':
+                from planteye_vision.processors.tf_model_inference_processor import TFModelInference
+                processor = TFModelInference(processor_config)
+            elif processor_config.type == 'pt_inference':
+                from planteye_vision.processors.pt_model_inference_processor import PTModelInference
+                processor = PTModelInference(processor_config)
             elif processor_config.type == 'save_on_disk':
                 processor = SaveOnDiskProcessor(processor_config)
             else:

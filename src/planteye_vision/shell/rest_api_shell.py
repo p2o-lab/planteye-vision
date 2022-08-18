@@ -18,6 +18,7 @@ class RestAPIShell(Shell):
         self.webserver_thread = None
         self.response_callback = None
         self.planteye_config = None
+        self.pipeline_executor = None
 
     def apply_configuration(self):
         host = self.config.parameters['host']

@@ -10,6 +10,32 @@ class ProcessorConfiguration(ComponentConfiguration):
         super().read(cfg_dict)
 
 
+class PTModelInferenceProcessorConfiguration(ProcessorConfiguration):
+    def __init__(self):
+        super().__init__()
+
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'path_to_models' in self.cfg_dict['parameters']:
+                self.parameters['path_to_models'] = self.cfg_dict['parameters']['path_to_models']
+            else:
+                self.parameters['path_to_models'] = None
+                self.valid = False
+            if 'model_name' in self.cfg_dict['parameters']:
+                self.parameters['model_name'] = self.cfg_dict['parameters']['model_name']
+            else:
+                self.parameters['model_name'] = None
+                self.valid = False
+            if 'model_version' in self.cfg_dict['parameters']:
+                self.parameters['model_version'] = self.cfg_dict['parameters']['model_version']
+            else:
+                self.parameters['model_version'] = None
+                self.valid = False
+        else:
+            self.valid = False
+
+
 class TFModelInferenceProcessorConfiguration(ProcessorConfiguration):
     def __init__(self):
         super().__init__()

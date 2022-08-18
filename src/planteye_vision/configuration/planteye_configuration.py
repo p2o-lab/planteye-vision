@@ -123,6 +123,8 @@ class PlantEyeConfiguration(Configuration):
                     processor_cfg = ColorConversionProcessorConfiguration()
                 elif processor_cfg_dict['type'] == 'tf_inference':
                     processor_cfg = TFModelInferenceProcessorConfiguration()
+                elif processor_cfg_dict['type'] == 'pt_inference':
+                    processor_cfg = PTModelInferenceProcessorConfiguration()
                 elif processor_cfg_dict['type'] == 'save_on_disk':
                     processor_cfg = SaveOnDiskProcessorConfiguration()
                 else:
