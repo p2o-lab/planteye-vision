@@ -10,7 +10,7 @@ Depending on the specified shell type, the result body is available for the end-
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install.
 
 ```bash
-pip install planteye-vision
+pip3 install planteye-vision
 ```
 
 ## Requirements
@@ -195,7 +195,16 @@ Parameters:\
 #### color_conversion
 This processes changes the image color map by means of cv2.cvtColor().
 Parameters:\
-  conversion (necessary): color transformation, please use documentation on cv2.cvtColor to get more information about possible transformations
+  conversion (necessary): color transformation, please use documentation on cv2.cvtColor to get more information about possible transformations, e.g. BGR2GRAY
+
+#### pt_inference
+This processor uses a specified pytorch jit script model to run inference.
+The model should be saved as pytorch jit script model via model.save() after applying torch.jit.script() to model.
+The model must be accessible locally by PlantEye and namely in .path_to_model/model_version/model_name.pt
+Parameters:\
+  path_to_model (necessary): path to folder with models
+  model_name (necessary): folder name of the specific model
+  model_version (necessary): folder name of the specific model version
 
 #### tf_inference
 This processor uses a specified tensorflow model to run inference.
