@@ -25,7 +25,7 @@ class PTModelInference(ConfigurableDataProcessor):
         path_to_models = self.config.parameters['path_to_models']
         model_name = self.config.parameters['model_name']
         model_version = self.config.parameters['model_version']
-        self.path_to_model = os.path.join(path_to_models, model_version, model_name)+'.pt'
+        self.path_to_model = os.path.join(path_to_models, model_name, model_version, 'model.pt')
         try:
             self.model = torch.jit.load(self.path_to_model)
             logging.info(f'Processor {self.name} ({self.type}): pt model loaded')
