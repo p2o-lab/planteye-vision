@@ -1,4 +1,5 @@
 from planteye_vision.inlet.generic_camera_inlet import GenericCameraInlet
+from planteye_vision.inlet.generic_camera_video_inlet import GenericCameraVideoInlet
 from planteye_vision.inlet.static_data_inlet import StaticDataInlet
 from planteye_vision.inlet.restapi_inlet import RestAPIDataInlet
 from planteye_vision.shell.rest_api_shell import RestAPIShell
@@ -69,6 +70,8 @@ class PipeLineExecutor:
         for inlet_config in inlet_configs:
             if inlet_config.type == 'local_camera_cv2':
                 inlet = GenericCameraInlet(inlet_config)
+            elif inlet_config.type == 'local_camera_cv2_video':
+                inlet = GenericCameraVideoInlet(inlet_config)
             elif inlet_config.type == 'baumer_camera_neoapi':
                 from planteye_vision.inlet.baumer_camera_inlet import BaumerCameraInlet
                 inlet = BaumerCameraInlet(inlet_config)
