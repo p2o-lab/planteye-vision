@@ -8,11 +8,11 @@ from planteye_vision.data_chunks.data_chunk import GeneralDataChunk
 from planteye_vision.data_chunks.data_chunk_status import CapturingStatus
 from planteye_vision.data_chunks.metadata_chunk import MetadataChunkData
 from planteye_vision.data_chunks.data_chunk_data import DataChunkImage
-from planteye_vision.configuration.inlet_configuration import CameraConfiguration
+from planteye_vision.configuration.inlet_configuration import VideoCameraConfiguration
 
 
 class GenericCameraInlet(CameraInlet):
-    def __init__(self, config: CameraConfiguration):
+    def __init__(self, config: VideoCameraConfiguration):
         super().__init__(config)
 
     def __del__(self):
