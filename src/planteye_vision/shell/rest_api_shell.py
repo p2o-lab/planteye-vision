@@ -17,6 +17,7 @@ class RestAPIShell(Shell):
         self.webserver = None
         self.webserver_thread = None
         self.response_callback = None
+        self.silent_execution_callback = None
         self.planteye_config = None
         self.pipeline_executor = None
 
@@ -28,6 +29,7 @@ class RestAPIShell(Shell):
         endpoint = self.config.parameters['endpoint']
         endpoint_name = 'PlantEye REST API Shell'
         self.webserver.add_url_rule(endpoint, endpoint_name, self.response_callback, ['GET'])
+        self.webserver.add_url_rule('/silent_execution', 'silent execution', self.silent_execution_callback, ['GET'])
         self.webserver.add_url_rule('/upload_config', 'configuration update', self.upload_configuration_callback, ['POST'])
         self.webserver.add_url_rule('/get_config', 'configuration', self.download_configuration_callback, ['GET'])
         self.webserver.add_url_rule('/', 'homepage', self.homepage_callback, ['GET'])
@@ -38,6 +40,9 @@ class RestAPIShell(Shell):
 
     def attach_callback(self, callback: callable):
         self.response_callback = callback
+
+    def attach_silent_execution_callback(self, callback: callable):
+        self.silent_execution_callback = callback
 
     def homepage_callback(self):
         welcome_str = 'Welcome to PlantEye API. Available endpoint is %s' % self.config.parameters['endpoint']

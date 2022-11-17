@@ -21,6 +21,22 @@ class CameraConfiguration(InletConfiguration):
                 self.parameters['device_id'] = self.cfg_dict['parameters']['device_id']
 
 
+class VideoCameraConfiguration(CameraConfiguration):
+    def __init__(self):
+        super().__init__()
+        self.parameters = {'device_id': 0}
+
+    def read(self, cfg_dict: dict):
+        super().read(cfg_dict)
+        if 'parameters' in self.cfg_dict.keys():
+            if 'device_id' in self.cfg_dict['parameters']:
+                self.parameters['device_id'] = self.cfg_dict['parameters']['device_id']
+            if 'no_frames' in self.cfg_dict['parameters']:
+                self.parameters['no_frames'] = self.cfg_dict['parameters']['no_frames']
+            if 'fps' in self.cfg_dict['parameters']:
+                self.parameters['fps'] = self.cfg_dict['parameters']['fps']
+
+
 class StaticValueConfiguration(InletConfiguration):
     def __init__(self):
         super().__init__()

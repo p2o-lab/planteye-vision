@@ -10,3 +10,7 @@ class Shell(ABC):
     @abstractmethod
     def attach_callback(self, callback):
         pass
+
+    @abstractmethod
+    def attach_silent_execution_callback(self, callback):
+        pass

@@ -1,0 +1,37 @@
+---
+inlets:
+  1:
+    name: camera
+    type: local_camera_cv2_video
+    hidden: False
+    parameters:
+      device_id: 0
+      no_frames: 10
+      fps: 1000
+    metadata:
+      '010F': Raspberry Pi # Manufacturer of recording equipment
+  2:
+    name: light_conditions
+    type: static_variable
+    hidden: False
+    parameters:
+      value: natural
+    metadata:
+      unit: none
+      interpretation: no artificial light switched on
+      description: light conditions during experiment
+processors:
+  0:
+    name: image_input
+    type: input
+    input_inlets:
+      - all
+  1:
+    name: save
+    type: save_on_disk
+    parameters:
+      save_path: 'data'
+shell:
+  type: periodical_local
+  parameters:
+    time_interval: 2000
