@@ -54,6 +54,7 @@ class PipeLineExecutor:
             self.shell = RestAPIShell(shell_config)
             self.shell.attach_planteye_configuration(self.config)
             self.shell.enable_configuration_update_via_restapi(self)
+            self.shell.attach_silent_execution_callback(self.silent_execution)
         else:
             self.shell = None
             logging.error(f'Unsupported shell type {shell_config.type}')
@@ -157,6 +158,27 @@ class PipeLineExecutor:
         logging.info(f'Pipeline execution finished (exec time {exec_duration:.3f} s)')
 
         return result
+
+    def silent_execution(self):
+        logging.info('PIPELINE EXECUTION STEP (SILENT)')
+        begin_time = time.time()
+        logging.debug('Pipeline execution began')
+        if self.cfg_update_flag:
+            logging.error('Pipeline execution aborted, configuration ongoing')
+            if isinstance(self.shell, RestAPIShell):
+                return json.dumps(None)
+            elif isinstance(self.shell, PeriodicalLocalShell):
+                return None
+
+        # Run only inlets and processors
+        inlet_result = self.inlets_execute()
+        _ = self.processors_execute(inlet_result)
+
+        end_time = time.time()
+        exec_duration = end_time - begin_time
+        logging.info(f'Pipeline execution finished (exec time {exec_duration:.3f} s)')
+
+        return 'Silent execution completed', 200
 
     def inlets_execute(self):
         data_chunks = []

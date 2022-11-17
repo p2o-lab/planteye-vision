@@ -14,6 +14,7 @@ class PeriodicalLocalShell(Shell):
         self.config = config
         self.time_scheduler = None
         self.callback = None
+        self.silent_callback = None
 
     def apply_configuration(self):
         self.time_scheduler = TimeScheduler(self.config.parameters['time_interval'], self.execution_step)
@@ -21,6 +22,9 @@ class PeriodicalLocalShell(Shell):
 
     def attach_callback(self, callback):
         self.callback = callback
+
+    def attach_silent_execution_callback(self, callback):
+        pass
 
     def execution_step(self):
         self.callback()

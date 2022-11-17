@@ -5,7 +5,7 @@ inlets:
     type: local_camera_cv2_video
     hidden: False
     parameters:
-      device_id: 1
+      device_id: 0
       no_frames: 10
       fps: 1000
     metadata:
